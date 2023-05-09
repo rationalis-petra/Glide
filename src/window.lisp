@@ -61,32 +61,36 @@
                          (or (and current-value (cdr current-value))
                              (input-table input-mode)))))
 
-      (setf accum (concatenate 'string accum (string (code-char key))))
-      (when next (setf current-value next))
-      (ccase current-state
-        (:neutral (when next
-                    (progn
-                      (if (car next)
-                          (setf current-state :valid)
-                          (setf current-state :partial))
-                      (cons :new-seq (car next)))))
-        (:partial (if next
-                      (progn
-                        (when (car next) (setf current-state :valid))
-                        (setf current-value next)
-                        (cons :cont-seq (car next)))
-                      (let ((ret-str accum))
-                        (reset state)
-                        (cons :release-invalid ret-str))))
-        (:valid (if next
-                    (progn
-                      (unless (car next) (setf current-state :partial))
-                      (setf current-value next)
-                      (cons :cont-seq (car next)))
-                    (progn
-                      (let ((ret-char (car current-value)))
-                        (reset state)
-                        (cons :release-valid ret-char)))))))))
+      ;; specific case: we know that this is terminating!
+      (if (and next (car next) (not (cdr next)))
+          (progn (reset state) (cons :release-valid (car next)))
+        (progn
+          (setf accum (concatenate 'string accum (string (code-char key))))
+          (when next (setf current-value next))
+          (ccase current-state
+                 (:neutral (when next
+                             (progn
+                               (if (car next)
+                                   (setf current-state :valid)
+                                 (setf current-state :partial))
+                               (cons :new-seq (car next)))))
+                 (:partial (if next
+                               (progn
+                                 (when (car next) (setf current-state :valid))
+                                 (setf current-value next)
+                                 (cons :cont-seq (car next)))
+                             (let ((ret-str accum))
+                               (reset state)
+                               (cons :release-invalid ret-str))))
+                 (:valid (if next
+                             (progn
+                               (unless (car next) (setf current-state :partial))
+                               (setf current-value next)
+                               (cons :cont-seq (car next)))
+                           (progn
+                             (let ((ret-char (car current-value)))
+                               (reset state)
+                               (cons :release-valid ret-char)))))))))))
 
 
 (defun on-keypress (window keyval keycode)
