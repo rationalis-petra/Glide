@@ -7,15 +7,28 @@
   :author "Connor Redfern"
   :license "BSD-3"
   :description "An editor for Glyph source code"
-  :depends-on (;; language extensions
-               :trivial-utf-8
+  :depends-on (;; system
+               :asdf
+               ;; language extensions
                :alexandria
                :iterate
-               :asdf
+               :trivial-utf-8
+               ;; portability
                :bordeaux-threads
+               ;; networking 
+               :usocket
+               :flexi-streams
+               :cl-json
+               ;; gui
                :cl-glib
                :cl-gtk4)
   :pathname "src/"
-  :components ((:file "glide" :depends-on ("window" "package"))
+  :components (;; Inbuild modules
+               (:file "glyph" :depends-on ("glide"))
+
+               ;; glide itself
+               (:file "glide" :depends-on ("window"))
+
+               ;; core components
                (:file "window" :depends-on ("package"))
                (:file "package")))
