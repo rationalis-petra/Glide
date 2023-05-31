@@ -15,20 +15,43 @@
                :trivial-utf-8
                ;; portability
                :bordeaux-threads
-               ;; networking 
+               ;; Networking (primarily intended for plugin use)
                :usocket
                :flexi-streams
                :cl-json
                ;; gui
                :cl-glib
                :cl-gtk4)
-  :pathname "src/"
-  :components (;; Inbuild modules
-               (:file "glyph" :depends-on ("glide"))
-
-               ;; glide itself
-               (:file "glide" :depends-on ("window"))
+  :pathname "src"
+  :components (;; glide itself
+               (:file "glide" :depends-on ("core" "views"))
 
                ;; core components
-               (:file "window" :depends-on ("package"))
-               (:file "package")))
+               (:file "package")
+
+               (:module "core"
+                :pathname "core"
+                :depends-on ("package")
+                :components ((:file "plugin")
+                             (:file "view")
+                             (:file "model")
+                             (:file "window")))
+
+               (:module "models"
+                :pathname "models"
+                :depends-on ("core")
+                :components ((:file "text")))
+
+               (:module "views"
+                :pathname "views"
+                :depends-on ("core" "models")
+                :components ((:file "text")
+                             (:file "dashboard")))
+
+
+               (:module "glyph"
+                :pathname "glyph"
+                :depends-on ("core" "views" "models")
+                :components ((:file "glyph" :depends-on ("connections"))
+                             (:file "connections" :depends-on ("package"))
+                             (:file "package")))))

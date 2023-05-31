@@ -1,0 +1,6 @@
+
+
++ TODO List
+  + Create a connections-view widget
+  + Create text-view
+    + subclass text-view as glyph-view
