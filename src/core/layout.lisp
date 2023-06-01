@@ -21,7 +21,14 @@
     (make-instance 'layout
                    :gtk-widget box
                    :layout-type :single
-                   :layout-children (list frame))))
+                   :children (list frame))))
+
+(defun layout-add-child (layout child &key orientation)
+  (with-slots (gtk-widget layout-type children) layout
+  ;; TODO: branching logic based on layout-type!
+    (gtk:box-append gtk-widget (gtk-widget child))
+    (push child children)
+    (setf layout-type orientation)))
 
 
 (defclass frame ()
@@ -37,7 +44,7 @@
               :orientation gtk4:+orientation-vertical+
               :spacing 10))
         (label (gtk4:make-label :str "modeline")))
-    (gtk4:box-append box (view-widget view))
+    (gtk4:box-append box (gtk-widget view))
     (gtk4:box-append box label)
     
     (setf (slot-value frame 'gtk-widget) box)))

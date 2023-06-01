@@ -16,4 +16,4 @@
       (setf (gtk4:widget-size-request image) '(256 256))
       ; (setf (gtk4:picture-can-shrink-p image) t)
       ; (setf (gtk4:picture-keep-aspect-ratio-p image) t)
-      (setf (view-widget view) image))))
+      (setf (gtk-widget view) image))))

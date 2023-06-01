@@ -4,14 +4,14 @@
 (defclass glyph-view (glide:text-view) ())
 
 
-(defun on-connect (widget user-data)
-  (declare (ignore user-data))
-  (let* (;; (root (gtk4:widget-root widget))
-         (window (gtk4:make-dialog))
-         (view (make-instance 'connections-view :model *gl-instances*)))
-    ;; (setf (window-transient-for window) root)
-    (setf (gtk4:window-child window) (view-widget view))
-    (gtk4:window-present window)))
+;; (defun on-connect (widget user-data)
+;;   (declare (ignore user-data))
+;;   (let* (;; (root (gtk4:widget-root widget))
+;;          (window (gtk4:make-dialog))
+;;          (view (make-instance 'connections-view :model *gl-connections*)))
+;;     ;; (setf (window-transient-for window) root)
+;;     (setf (gtk4:window-child window) (gtk-widget view))
+;;     (gtk4:window-present window)))
 
 
 (defun hash-table-from-list (list)
@@ -22,8 +22,9 @@
 
 
 (defun connect-command (window)
-  (print "connected!")
-  (finish-output))
+  (glide:window-add-view
+   window
+   (make-instance 'connections-view :model *gl-connections*)))
 
 
 (defvar +glyph-plugin+

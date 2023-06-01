@@ -1,6 +1,6 @@
 (in-package :glyph)
 
-(defvar *gl-instances* nil)
+(defvar *gl-connections* nil)
 
 (defclass glyph-connection (model)
   ((stream
@@ -23,7 +23,7 @@
                       :external-format (flex:make-external-format :utf8)))
              (instance (make-instance 'gl-instance :stream stream)))
         ;(make-listening-thread instance)
-        (push instance *gl-instances*)
+        (push instance *gl-connections*)
         (print "connected")
         instance)
     (t (val) (format t "couln't connect!, error: ~A~%" val))))
@@ -63,7 +63,7 @@
     (gtk4:box-append widget add-connection-row)
 
     ; (gtk4:connect)
-    (setf (view-widget view) widget)))
+    (setf (gtk-widget view) widget)))
 
 
 

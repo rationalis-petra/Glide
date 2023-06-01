@@ -5,8 +5,8 @@
     :initarg :model
     :accessor view-model
     :documentation "The data that this view looks at")
-   (widget
-    :accessor view-widget
+   (gtk-widget
+    :accessor gtk-widget
     :documentation "The gtk4 widget that this view")))
 
 

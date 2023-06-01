@@ -15,8 +15,6 @@
    (action-group
     :reader action-group
     :initform (gio:make-simple-action-group))
-   (layout-widget
-    :reader layout-widget)
    (layout
     :reader window-layout)
    ;; keymap/shortcuts
@@ -30,7 +28,6 @@
 
 (defgeneric (setf layout) (window layout))
 
-;; layout
 
 (defun run-command (window text)
   (setf (gtk4:widget-visible-p (palette window)) nil)
@@ -116,6 +113,8 @@
 
          (shortcut-controller
            (gtk4:make-shortcut-controller)))
+    (setf (slot-value window 'layout-parent) overlay)
+    (setf (slot-value window 'gtk-window) gtk-window)
 
     (gtk4:widget-insert-action-group gtk-window "window" (action-group window))
 
@@ -134,15 +133,12 @@
 
     ;; window construction
     (gtk4:box-append window-box menu-bar)
-    (setf (gtk4:overlay-child overlay) (gtk-widget start-frame))
+    (setf (window-layout window) (make-single-layout start-frame))
     (gtk4:box-append window-box overlay)
 
     (when title (setf (gtk4:window-title gtk-window) title))
     (setf (gtk4:window-child gtk-window) window-box)
     (gtk4:window-maximize gtk-window)
-
-    (setf (slot-value window 'gtk-window) gtk-window)
-    (setf (slot-value window 'layout-widget) overlay)
 
 
     ;; Window command palette
@@ -154,14 +150,20 @@
                         (run-command window text))))
       (gtk4:overlay-add-overlay overlay palette)
       (setf (gtk4:widget-visible-p palette) nil)
-      (setf (slot-value window 'palette) palette))
-    (setf (slot-value window 'layout-parent) overlay)))
+      (setf (slot-value window 'palette) palette))))
 
 
 (defmethod (setf window-layout) (new-layout (window window))
   ;; TODO: march down window layout & build hbox/vbox hierarchy
   (with-slots (layout layout-parent) window
-    (setf (gtk4:overlay-child overlay) (gtk-widget new-layout))
+    (setf (gtk4:overlay-child layout-parent) (gtk-widget new-layout))
     (setf layout new-layout)))
 
 
+
+(defun window-add-view (window view)
+  (layout-add-child
+   (window-layout window)
+   view
+   ;(initialize-instance 'frame :view view)
+   :orientation :horizontal))
