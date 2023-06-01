@@ -35,6 +35,7 @@
                 :components ((:file "plugin")
                              (:file "view")
                              (:file "model")
+                             (:file "layout")
                              (:file "window")))
 
                (:module "models"

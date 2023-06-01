@@ -28,32 +28,14 @@
    (shortcut-controller)))
 
 
-(defgeneric (setf layout-widget) (window widget))
-
 (defgeneric (setf layout) (window layout))
 
 ;; layout
-(defclass frame ()
-  ((current-view
-    :initarg :view
-    :accessor frame-view)
-   (gtk-widget
-    :reader gtk-widget)))
-
-
-(defmethod initialize-instance :after ((frame frame) &key view)
-  (let ((box (gtk4:make-box
-              :orientation gtk4:+orientation-vertical+
-              :spacing 10))
-        (label (gtk4:make-label :str "modeline")))
-    (gtk4:box-append box (view-widget view))
-    (gtk4:box-append box label)
-    
-    (setf (slot-value frame 'gtk-widget) box)))
 
 (defun run-command (window text)
   (setf (gtk4:widget-visible-p (palette window)) nil)
-  (format t "running command: ~A~%" text))
+  (let ((result (gethash text *commands*)))
+    (when result (funcall result window))))
 
 (defun open-command-palette (window)
   (setf (gtk4:widget-visible-p (palette window)) t)
@@ -176,17 +158,10 @@
     (setf (slot-value window 'layout-parent) overlay)))
 
 
-(defmethod (setf window-layout) (frame (window window))
+(defmethod (setf window-layout) (new-layout (window window))
   ;; TODO: march down window layout & build hbox/vbox hierarchy
-  (with-slots (layout gtk-window) window
-    (let ((overlay (gtk4:make-overlay)))
-      (setf (gtk4:overlay-child overlay) frame)
-      (setf layout frame)
-      (setf (layout-widget window) overlay))))
+  (with-slots (layout layout-parent) window
+    (setf (gtk4:overlay-child overlay) (gtk-widget new-layout))
+    (setf layout new-layout)))
 
 
-(defmethod (setf layout-widget) (widget (window window))
-  (let ((box (gtk4:window-child (gtk-window window))))
-    (when (layout-widget window)
-      (gtk4:box-remove box (layout-widget window)))
-    (gtk4:box-append box widget)))

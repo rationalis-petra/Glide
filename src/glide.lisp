@@ -3,21 +3,20 @@
 
 (defun initialize (app)
   ;; blank state
-  (setf *commands* (make-hash-table))
-  (setf *action-map* nil)
+  (setf *commands* (make-hash-table :test #'equal))
   (setf *start-view* 'dashboard-view)
 
   ;; initialize 
 
-
   ;; initialize subsystems
-  (mapcar #'funcall *initializers*)
+  (mapcar #'initialize-plugin *plugins*)
+  (mapcar #'load-plugin *plugins*))
 
   ;; use initialization data
-  (iter (for (action . fun) in *action-map*)
-    ;; TODO: change to window?
-    (gio:action-map-add-action app action)
-    (gtk4:connect action "activate" fun)))
+  ;; (iter (for (action . fun) in *action-map*)
+  ;;   ;; TODO: change to window?
+  ;;   (gio:action-map-add-action app action)
+  ;;   (gtk4:connect action "activate" fun)))
 
 
 (defun main ()
