@@ -10,6 +10,8 @@
     :accessor window-focus-view)
    (gtk-window
     :reader gtk-window)
+   (palette
+    :reader palette)
    (action-group
     :reader action-group
     :initform (gio:make-simple-action-group))
@@ -22,6 +24,7 @@
     :accessor window-keymap)
 
    ;; "internal" slots → do not form a public interface
+   (layout-parent)
    (shortcut-controller)))
 
 
@@ -49,17 +52,12 @@
     (setf (slot-value frame 'gtk-widget) box)))
 
 (defun run-command (window text)
+  (setf (gtk4:widget-visible-p (palette window)) nil)
   (format t "running command: ~A~%" text))
 
 (defun open-command-palette (window)
-  (with-slots (layout-widget) window
-    (let ((palette (gtk4:make-entry)))
-      (setf (gtk4:widget-halign palette) gtk4:+align-center+)
-      (gtk4:connect palette "activate"
-                    (lambda (widget)
-                      (let ((text (gtk4:entry-buffer-text (gtk4:entry-buffer widget))))
-                        (run-command window text))))
-      (gtk4:overlay-add-overlay layout-widget palette))))
+  (setf (gtk4:widget-visible-p (palette window)) t)
+  (gtk4:widget-grab-focus (palette window)))
 
 
 (defvar +default-menu-desc+
@@ -161,9 +159,21 @@
     (setf (gtk4:window-child gtk-window) window-box)
     (gtk4:window-maximize gtk-window)
 
-
     (setf (slot-value window 'gtk-window) gtk-window)
-    (setf (slot-value window 'layout-widget) overlay)))
+    (setf (slot-value window 'layout-widget) overlay)
+
+
+    ;; Window command palette
+    (let ((palette (gtk4:make-entry)))
+      (setf (gtk4:widget-halign palette) gtk4:+align-center+)
+      (gtk4:connect palette "activate"
+                    (lambda (widget)
+                      (let ((text (gtk4:entry-buffer-text (gtk4:entry-buffer widget))))
+                        (run-command window text))))
+      (gtk4:overlay-add-overlay overlay palette)
+      (setf (gtk4:widget-visible-p palette) nil)
+      (setf (slot-value window 'palette) palette))
+    (setf (slot-value window 'layout-parent) overlay)))
 
 
 (defmethod (setf window-layout) (frame (window window))
