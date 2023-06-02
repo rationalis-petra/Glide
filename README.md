@@ -1,9 +1,11 @@
 # About
 
-Glide is a data editor. As programmers, we often use programs like like VSCode,
-Atom, (Neo)Vim and Emacs. These programs are primarily intended for editing
-text, and plugins offer a richer way of interacting with a particular type of
-text (program, markup, config files etc.). 
+Glide is a data editor, which puts it in contrast to programe like VSCode,
+Atom, (Neo)Vim and Emacs. While the latter which are intended for editing
+text, and feature plugins to offer a richer way of interacting with a particular
+type of text (program, markup, config files etc.), Glide is intended to allow
+interaction with many different types of data (text, images, databases, etc.),
+and to allow interaction with this data from many different perspectives.
 
 However, as developers we interact with many different types of data - programs,
 images, databases, colours, version-controlled repositories, 3D objects,
@@ -29,7 +31,8 @@ goal is two-fold:
 
 # Architecture
 
-Glide is build on an architecture related to the MVC framework, except we have /models/, /views/ and /bridges/.
+Glide is build on an architecture related to the MVC framework, except we have
+*models*, *views* and *bridges*. 
 
 + A model is simply a representation of a particular datatype (text, image,
   etc.). Models are arranged in a hierarchy, e.g. 'c++ source code' would be
