@@ -21,26 +21,32 @@
     (finally (return table))))
 
 
-(defun connect-command (window)
+(defun list-connections (window)
   (glide:window-add-view
    window
    (make-instance 'connections-view :model *gl-connections*)))
 
+(defun new-playground (window)
+  (glide:window-add-view
+   window
+   (make-instance 'glide:text-view
+                  :model (make-instance 'glide:text-model)
+                  :input-mode glide:+unicode-input-mode+)))
 
-(defvar +glyph-plugin+
+(defparameter +glyph-plugin+
   (make-instance
    'glide:plugin
    :name "Glyph"
    :about "A plugin for the Glyph Language"
    :commands (hash-table-from-list
               (list
-               (list "glyph:connect" #'connect-command)))
+               (list "glyph:connections" #'list-connections)
+               (list "glyph:new-playground" #'new-playground)))
    :views (list 'glyph-view)
    :models ()))
 
 
 (defvar has-init nil)
-
 
 (unless has-init 
   (progn

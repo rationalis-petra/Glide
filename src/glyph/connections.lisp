@@ -21,7 +21,7 @@
              (stream (flex:make-flexi-stream
                       (usocket:socket-stream socket)
                       :external-format (flex:make-external-format :utf8)))
-             (instance (make-instance 'gl-instance :stream stream)))
+             (instance (make-instance 'glyph-connection :stream stream)))
         ;(make-listening-thread instance)
         (push instance *gl-connections*)
         (print "connected")
@@ -45,10 +45,20 @@
          (add-connection-row (gtk4:make-box
                               :orientation gtk4:+orientation-horizontal+
                               :spacing 0))
-         (hostname-text-box (gtk4:make-text))
-         (port-text-box (gtk4:make-text))
+         (hostname-text-box (gtk4:make-entry))
+         (port-text-box (gtk4:make-entry))
 
          (add-connection-btn (gtk4:make-button :label "New")))
+
+    (flet ((new-connection (button)
+             (declare (ignore button))
+             (let* ((host-text (gtk4:entry-buffer-text (gtk4:entry-buffer
+                                                        hostname-text-box)))
+                    (port-text (gtk4:entry-buffer-text (gtk4:entry-buffer port-text-box))))
+             (make-connection
+              :host host-text
+              :port (parse-integer port-text)))))
+      (gtk4:connect add-connection-btn "clicked" #'new-connection))
 
     (gir:invoke ((gtk4:text-buffer hostname-text-box) 'set-text)
                 (string "localhost") (length "localhost"))
@@ -58,6 +68,7 @@
     (gtk4:box-append add-connection-row hostname-text-box)
     (gtk4:box-append add-connection-row port-text-box)
     (gtk4:box-append add-connection-row add-connection-btn)
+
 
     ; (gtk4:box-append widget list)
     (gtk4:box-append widget add-connection-row)

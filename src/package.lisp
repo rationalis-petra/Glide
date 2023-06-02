@@ -10,6 +10,8 @@
    :plugin :register-plugin
    ;; views
    :view :text-view
+   :+unicode-input-mode+
+   :input-mode
    ;; models
    :model :text-model))
 (in-package :glide)

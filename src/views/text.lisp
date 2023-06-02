@@ -6,13 +6,13 @@
     :initarg :input-mode
     :initform +unicode-input-mode+)
    (input-state
-    :reader input-state
-    :initform nil))
+    :reader input-state))
   (:documentation "Text view widget"))
 
 (defclass input-mode ()
   ((table
-    :reader input-table)))
+    :reader input-table))
+  (:documentation ""))
 
 (defclass input-mode-state ()
   ((input-mode
@@ -32,20 +32,32 @@
 
 (defmethod initialize-instance :after ((view text-view) &key model input-mode)
   (declare (ignore model input-mode))
-  (with-slots (widget model input-mode input-mode-state) view
+  (with-slots (gtk-widget model input-mode input-state) view
+    (setf gtk-widget (gtk4:make-text-view
+                      :buffer (gtk-buffer model)))
+    (setf (gtk4:widget-vexpand-p gtk-widget) t)
+
+    ;; Setup input mode & key controller
     (setf input-state (make-instance 'input-mode-state :input-mode input-mode))
-    (setf widget (gtk4:make-text-view
-                  :buffer (text-buffer model)))))
+    (let ((key-controller (gtk4:make-event-controller-key)))
+      (gtk4:connect key-controller "key-pressed"
+               (lambda (controller keyval keycode state)
+                 (declare (ignore controller state))
+                 (on-keypress view keyval keycode)))
+      (gtk4:widget-add-controller gtk-widget key-controller))))
 
 ;; Satisfying the interface
 (defmethod view-supported-types ((view-class (eql (find-class 'text-view))))
   (list (find-class 'text-model)))
 
+
 (defmethod view-menu-options ((view-class (eql (find-class 'text-view))))
   nil)
 
+
 (defmethod model-updated ((view text-view))
   (error "text view has not yet implemented model-updated"))
+
 
 (defmethod view-commands ((view text-view)) nil)
 
@@ -55,7 +67,7 @@
     (setf result (make-input-table table)))
   (call-next-method))
 
-;; text
+
 (defun reset (state)
   (with-slots (input-mode accum current-value current-state) state
     (setf accum "")
@@ -64,68 +76,62 @@
 
 
 (defun step-input-state (state key)
+  "Given the current input state and a keypress, return on of: "
   (with-slots (input-mode accum current-value current-state) state
     ;; next = nil OR (maybe char . maybe hash-table) 
     (let ((next (gethash (code-char key)
                          (or (and current-value (cdr current-value))
                              (input-table input-mode)))))
 
-      ;; specific case: we know that this is terminating!
       (if (and next (car next) (not (cdr next)))
+          ;; Case 1: We know that this is terminating! We have reached the end of a valid sequence
           (progn (reset state) (cons :release-valid (car next)))
-        (progn
-          (setf accum (concatenate 'string accum (string (code-char key))))
-          (when next (setf current-value next))
-          (ccase current-state
-                 (:neutral (when next
-                             (progn
-                               (if (car next)
-                                   (setf current-state :valid)
-                                 (setf current-state :partial))
-                               (cons :new-seq (car next)))))
-                 (:partial (if next
-                               (progn
-                                 (when (car next) (setf current-state :valid))
-                                 (setf current-value next)
-                                 (cons :cont-seq (car next)))
-                             (let ((ret-str accum))
-                               (reset state)
-                               (cons :release-invalid ret-str))))
-                 (:valid (if next
-                             (progn
-                               (unless (car next) (setf current-state :partial))
-                               (setf current-value next)
-                               (cons :cont-seq (car next)))
-                           (progn
-                             (let ((ret-char (car current-value)))
-                               (reset state)
-                               (cons :release-valid ret-char)))))))))))
+
+          ;; Case 2: We are part-way through a sequence
+          (progn
+            (setf accum (concatenate 'string accum (string (code-char key))))
+            (when next (setf current-value next))
+            (ccase current-state
+              (:neutral (when next
+                          (progn
+                            (if (car next)
+                                (setf current-state :valid)
+                                (setf current-state :partial))
+                            (cons :new-seq (car next)))))
+              (:partial (if next
+                            (progn
+                              (when (car next) (setf current-state :valid))
+                              (setf current-value next)
+                              (cons :cont-seq (car next)))
+                            (let ((ret-str accum))
+                              (reset state)
+                              (cons :release-invalid ret-str))))
+              (:valid (if next
+                          (progn
+                            (unless (car next) (setf current-state :partial))
+                            (setf current-value next)
+                            (cons :cont-seq (car next)))
+                          (progn
+                            (let ((ret-char (car current-value)))
+                              (reset state)
+                              (cons :release-valid ret-char)))))))))))
 
 
-(defun on-keypress (window keyval keycode)
+(defun on-keypress (view keyval keycode)
   (declare (ignore keycode))
   (if (< keyval (expt 2 15))
-    (let ((result (step-input-state (input-state window) keyval)))
+    (let ((result (step-input-state (input-state view) keyval)))
       (if result
           (progn
             (ccase (car result)
               (:new-seq nil)
               (:cont-seq nil)
               (:release-valid
-               ;;(gtk4:insert-at-cursor (widget window) (string (cdr result))))
-               (gir:invoke
-                ((text-view-buffer (widget window)) 'insert-at-cursor)
-                (string (cdr result))
-                (utf-8-byte-length (string (cdr result)))))
-               ;; ;; (utf-8-byte-length (string (cdr result)))
+               (insert-at-cursor (view-model view) (string (cdr result))))
               (:release-invalid
-               ;;(gtk4:insert-at-cursor (widget window) (string (cdr result)))))
-               ;; Giving errors: possibly replace with gir:invoke??
-               (gir:invoke
-                ((text-view-buffer (widget window)) 'insert-at-cursor)
-                (string (cdr result))
-                (utf-8-byte-length (string (cdr result))))))
-            t)))
+               (insert-at-cursor (view-model view) (string (cdr result)))))
+            t)
+          nil))
     nil))
 
 

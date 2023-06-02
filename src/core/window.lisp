@@ -149,6 +149,7 @@
                       (let ((text (gtk4:entry-buffer-text (gtk4:entry-buffer widget))))
                         (run-command window text))))
       (gtk4:overlay-add-overlay overlay palette)
+      (setf (gtk4:widget-vexpand-p palette) nil)
       (setf (gtk4:widget-visible-p palette) nil)
       (setf (slot-value window 'palette) palette))))
 
@@ -164,6 +165,6 @@
 (defun window-add-view (window view)
   (layout-add-child
    (window-layout window)
-   view
+   (make-instance 'frame :view view)
    ;(initialize-instance 'frame :view view)
    :orientation :horizontal))
