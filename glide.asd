@@ -18,7 +18,7 @@
                ;; Networking (primarily intended for plugin use)
                :usocket
                :flexi-streams
-               :cl-json
+               :yason
                ;; gui
                :cl-glib
                :cl-gtk4)

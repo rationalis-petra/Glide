@@ -2,9 +2,13 @@
 
 (defclass view ()
   ((model
-    :initarg :model
     :accessor view-model
+    :initarg :model
     :documentation "The data that this view looks at")
+   (modeline-widgets
+    :reader modeline-widgets
+    :initform nil
+    :documentation "Widgets to put on the modeline")
    (gtk-widget
     :accessor gtk-widget
     :documentation "The gtk4 widget that this view")))
@@ -23,6 +27,10 @@
 
 
 ;; instance-level generics
+(defgeneric view-name (view)
+  (:documentation "Invoked on a view when the underlying model is updated")
+  (:method (view) (string (type-of view))))
+
 (defgeneric model-updated (view)
   (:documentation "Invoked on a view when the underlying model is updated")
   (:method (view)

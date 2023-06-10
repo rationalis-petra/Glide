@@ -5,15 +5,22 @@
    :window
    :window-add-view
    ;; main function, for easy running
-   :main
+   :main :glide-app
    ;; Plugin hook interface
    :plugin :register-plugin
    ;; views
-   :view :text-view
+   :view
+   :view-model :gtk-widget
+   :modeline-widgets
+
+   :text-view
    :+unicode-input-mode+
    :input-mode
    ;; models
-   :model :text-model))
+   :model
+
+   :text-model
+   :gtk-buffer :text-model-string :text-model-insert :text-model-end-iter))
 (in-package :glide)
 
 ;; Global Variables 
