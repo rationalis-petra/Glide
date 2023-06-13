@@ -1,7 +1,8 @@
 (in-package :glyph)
 
 
-(defvar *gl-connections* nil)
+(defvar *gl-connections-model* (make-instance 'list-model))
+
 
 (defclass glyph-connection (model)
   ((stream
@@ -23,6 +24,7 @@
     :initarg :listener-thread))
   (:documentation "Represents a connection to a Glyph server"))
 
+
 (defmethod initialize-instance :after ((conn glyph-connection) &key stream)
   (setf (listener-thread conn)
         (bt:make-thread (lambda () (recv-message conn)))))
@@ -40,26 +42,26 @@
                       :external-format :utf8))
              (instance (make-instance 'glyph-connection
                                       :stream stream)))
-        (push instance *gl-connections*)
-        (print "connected")
+        (add-element instance *gl-connections-model*)
         instance)
-    (t (val) (format t "couln't connect!, error: ~A~%" val))))
+    (t (val) (format t "couldn't connect!, error: ~A~%" val))))
 
 
 (defclass connections-view (view) ())
 
+(defclass connections-list-view (abstract-list-view) ())
+
+(defmethod make-list-item-widget ((view connections-list-view))
+  (gtk4:make-label :str "Connection"))
+
+(defmethod update-list-item-widget ((view connections-list-view) connection widget))
 
 (defmethod initialize-instance :after ((view connections-view) &key model)
   (let* ((widget (gtk4:make-box
                   :orientation gtk4:+orientation-vertical+
                   :spacing 0))
+         (list-view (make-instance 'connections-list-view :model model))
          (connections model)
-
-
-         (list-model (gtk4:make-string-list :strings nil))
-         (list-view (gtk4:make-list-view 
-                     :model list-model
-                     :factory (gtk4:make-signal-list-item-factory)))
 
          (add-connection-row (gtk4:make-box
                               :orientation gtk4:+orientation-horizontal+
@@ -88,15 +90,13 @@
     (gtk4:box-append add-connection-row port-text-box)
     (gtk4:box-append add-connection-row add-connection-btn)
 
-    ; (gtk4:box-append widget list)
+    (gtk4:box-append widget (gtk-widget list-view))
     (gtk4:box-append widget add-connection-row)
 
-    ; (gtk4:connect)
     (setf (gtk-widget view) widget)))
 
 
 (defclass connection-view (view) ())
-
 
 (defmethod initialize-instance :after ((view connection-view) &key model)
   (let* ((box (gtk4:make-box :orientation gtk4:+orientation-vertical+
@@ -106,13 +106,24 @@
     (gtk4:box-append box repl-view)
     (setf (gtk-widget view) box)))
 
-; (run-code (car *gl-connections*) "Hello, world") 
-; (setf *gl-connections* nil) *gl-connections* 
-; (force-output *standard-output*) 
+(defun close-connection (connection))
+
+(defun write-message (connection message)
+  (gtk4:run-in-main-event-loop ()
+      (glide:text-model-insert
+       (repl-model connection)
+       (glide:text-model-end-iter (repl-model connection))
+       (format nil "~A~%" message))))
+
+(defun write-error (connection message)
+  (gtk4:run-in-main-event-loop ()
+      (glide:text-model-insert
+       (repl-model connection)
+       (glide:text-model-end-iter (repl-model connection))
+       (format nil "Error: ~A~%" message))))
 
 ;; Sending a message 
 (defun run-code (connection code &key (path (make-array 0)))
-  (format t "running code: ~A~%" code)
   (setf yason:*symbol-key-encoder* #'yason:encode-symbol-as-lowercase) 
   (yason:encode-plist
    (list
@@ -126,11 +137,15 @@
 ;; Receiving a message
 (defun recv-message (connection)
   (let ((message (yason:parse (server-stream connection))))
-    (unless (equal "quit" message)
-      (format t "received a message")
-      (bt:with-lock-held ((repl-lock connection))
-        (glide:text-model-insert
-         (repl-model connection)
-         (glide:text-model-end-iter (repl-model connection))
-         (format nil "message: ~A" message)))
-      (recv-message connection))))
+    (cond
+      ((equal "quit" message) (close-connection connection))
+      ((equal "Result" (gethash "type" message))
+       (write-message connection (gethash "val" message))
+       (recv-message connection))
+      ((equal "Error" (gethash "type" message))
+       (write-error connection (gethash "msg" message))
+       (recv-message connection))
+      (t
+       ;; (yason:encode-plist message)
+       ;; (yason:encode-plist)
+       (recv-message connection)))))

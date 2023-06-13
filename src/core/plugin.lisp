@@ -10,10 +10,13 @@
 (defvar *start-view* nil)
 (defvar *commands* (make-hash-table :test #'equal))
 
+
 (defun register-plugin (plugin)
   (pushnew plugin *plugins*))
 
+
 (defun register-models (plugin models))
+
 
 (defun register-views (plugin views)
 "For PLUGIN, register the list of VIEWS. This means two things:
@@ -21,7 +24,11 @@
 2. Glide will look at the models associated with each VIEW, and make sure
    they are available for that model. Further, a given view may request to be
    the default view for a given datatype.")
- 
+
+
+(defun get-menu-descs ()
+  (iter (for plugin in *plugins*)
+    (collect (slot-value plugin 'menu-bar-submenus))))
 
 
 (defclass plugin ()
@@ -68,3 +75,5 @@ with this plugin")
 (defun load-plugin (plugin)
   (iter (for (name command) in-hashtable (slot-value plugin 'commands))
     (setf (gethash name *commands*) command)))
+
+;; interface used 

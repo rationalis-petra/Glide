@@ -32,10 +32,3 @@
                  (alexandria:rcurry #'gobj:pointer-object 'window))
                 (glib:glist-list (gtk4:application-windows app)))
         (glib:idle-add (lambda () (gio:application-quit app)))))))
-
-;; (gtk4:define-application (:name glide-main
-;;                           :id "org.rationalis-petra.glide-main")
-;;   (let ((window (make-instance 'window :app gtk4:*application* :title "Glide")))
-;;     (gtk4:define-main-window (gtk-window (gtk-window window))
-;;         (unless (gtk4:widget-visible-p gtk-window)
-;;           (gtk4:window-present gtk-window)))))

@@ -7,23 +7,26 @@
 
 (defclass window ()
   ((focus-view
-    :accessor window-focus-view)
+    :accessor window-focus-view
+    :documentation "The current view that is")
    (gtk-window
-    :reader gtk-window)
+    :reader gtk-window
+    :documentation "The underlying gtk window")
    (palette
     :reader palette)
    (action-group
     :reader action-group
     :initform (gio:make-simple-action-group))
    (layout
-    :reader window-layout)
-   ;; keymap/shortcuts
+    :reader window-layout
+    :documentation "")
    (keymap
     :accessor window-keymap)
 
    ;; "internal" slots → do not form a public interface
    (layout-parent)
-   (shortcut-controller)))
+   (shortcut-controller
+    :initform (gtk4:make-shortcut-controller))))
 
 
 (defgeneric (setf layout) (window layout))
@@ -31,6 +34,7 @@
 
 (defun run-command (window text)
   (setf (gtk4:widget-visible-p (palette window)) nil)
+  ;(setf (gtk4:entry-buffer-text (palette window)) "")
   (let ((result (gethash text *commands*)))
     (when result (funcall result window))))
 
@@ -53,6 +57,34 @@
          (cons "Command"
                (lambda (window)
                  (open-command-palette window))))))
+
+(defun make-initial-menu-desc ()
+  (reduce #'merge-menu-descs
+          (append (list +default-menu-desc+) (get-menu-descs))))
+
+
+;; Eagerly use menu-2's item
+;; TODO: merge in any toplevel items occuring 
+(defun merge-menu-descs (menu-1 menu-2)
+  (flet ((merge-elements (name result child)
+           (if result
+               (cons name (merge-menu-descs child (cdr result)))
+               (cons name child))))
+
+    (cond
+      ((not menu-1) menu-2)
+      ((and (listp menu-1) (listp menu-2))
+       (let ((menu-1-merge 
+               (iter (for (name . child) in menu-1)
+                 (let ((res (assoc name menu-2 :test #'equal)))
+                   (collect (merge-elements name res child)))))
+             (menu-2-merge
+               (iter (for (name . child) in menu-2)
+                          (unless (assoc name menu-1)
+                            (collect (cons name child))))))
+         (append menu-1-merge menu-2-merge)))
+
+      (t menu-2))))
 
 
 (defun make-menu-bar (window menu-items)
@@ -81,17 +113,16 @@
       (finally
        (gio:menu-append-submenu menu subheading submenu)))
     (finally
-     
      (return (gtk4:make-popover-menu-bar :model menu)))))
 
 
 (defmethod initialize-instance :after ((window window) &key app title)
-  (let* ((gtk-window (if app (gtk4:make-application-window
-                              :application app)))
+  (let* ((gtk-window (gtk4:make-application-window
+                              :application app))
          (window-box (gtk4:make-box
                       :orientation gtk4:+orientation-vertical+
                       :spacing 10))
-         (menu-bar (make-menu-bar window +default-menu-desc+))
+         (menu-bar (make-menu-bar window (make-initial-menu-desc)))
          (start-view (make-instance 'dashboard-view))
          (start-frame (make-instance 'frame :view start-view))
 
@@ -105,18 +136,13 @@
          (command-palette-action
            (gio:make-simple-action
                 :name "command_palette"
-                :parameter-type nil))
-         ;; (gtk4:make-callback-action
-         ;;   :callback (lambda (w h) (open-command-palette window))
-         ;;   :data nil
-         ;;   :destroy nil)
-
-         (shortcut-controller
-           (gtk4:make-shortcut-controller)))
+                :parameter-type nil)))
     (setf (slot-value window 'layout-parent) overlay)
     (setf (slot-value window 'gtk-window) gtk-window)
 
+    ;; register action group + controller with window.
     (gtk4:widget-insert-action-group gtk-window "window" (action-group window))
+    (gtk4:widget-add-controller gtk-window (slot-value window 'shortcut-controller))
 
     (gio:action-map-add-action (action-group window) command-palette-action)
     ;; shortcuts
@@ -126,10 +152,9 @@
                     (open-command-palette window)))
 
     (gtk4:shortcut-controller-add-shortcut
-     shortcut-controller
+     (slot-value window 'shortcut-controller)
      command-palette-shortcut)
 
-    (gtk4:widget-add-controller gtk-window shortcut-controller)
 
     ;; window construction
     (gtk4:box-append window-box menu-bar)
@@ -166,5 +191,4 @@
   (layout-add-child
    (window-layout window)
    (make-instance 'frame :view view)
-   ;(initialize-instance 'frame :view view)
    :orientation :horizontal))

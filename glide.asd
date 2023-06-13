@@ -41,12 +41,14 @@
                (:module "models"
                 :pathname "models"
                 :depends-on ("core")
-                :components ((:file "text")))
+                :components ((:file "text")
+                             (:file "list")))
 
                (:module "views"
                 :pathname "views"
                 :depends-on ("core" "models")
                 :components ((:file "text")
+                             (:file "list")
                              (:file "dashboard")))
 
 

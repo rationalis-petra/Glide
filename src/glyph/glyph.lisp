@@ -10,9 +10,9 @@
     (gtk4:connect btn "clicked"
                   (lambda (btn)
                     (declare (ignore btn))
-                    (when *gl-connections*
+                    (when *gl-connections-model*
                       (run-code
-                       (car *gl-connections*)
+                       (get-element 0 *gl-connections-model*)
                        (text-model-string (view-model view))))))
     (with-slots (modeline-widgets) view
       (push btn modeline-widgets))))
@@ -28,7 +28,7 @@
 (defun list-connections (window)
   (window-add-view
    window
-   (make-instance 'connections-view :model *gl-connections*)))
+   (make-instance 'connections-view :model *gl-connections-model*)))
 
 
 (defun new-playground (window)
@@ -40,13 +40,15 @@
 
 
 (defun show-server (window)
-  (if *gl-connections*
+  (if (not (emptyp *gl-connections-model*))
       (window-add-view
        window
        (make-instance 'connection-view
-                      :model (car *gl-connections*)))
+                      :model (get-element 0 *gl-connections-model*)))
       (print "No server available")))
 
+(defvar +menu-addons+
+  (list))
 
 (defparameter +glyph-plugin+
   (make-instance
@@ -59,12 +61,17 @@
                (list "glyph:server" #'show-server)
                (list "glyph:playground" #'new-playground)))
    :views (list 'glyph-view)
+   :menu-bar-submenus (list
+                       (list "View"
+                             (cons "connections" #'list-connections)
+                             (cons "server" #'show-server)
+                             (cons "playground" #'new-playground)))
    :models ()))
 
 
 (defvar has-init nil)
 
-
-(unless has-init 
+(unless has-init
   (progn
+    (setf has-init t)
     (register-plugin +glyph-plugin+)))
