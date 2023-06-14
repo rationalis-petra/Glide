@@ -1,9 +1,23 @@
+;;;; window.lisp
+
+;; Copyright (C) 2023 Connor Redfern
+;;
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 (in-package :glide)
 
-
-;; TODO: frames contain views, we can have two frames adjacent, frames can swap
-;; what view they contain.
-      
 
 (defclass window ()
   ((focus-view
@@ -33,10 +47,9 @@
 
 
 (defun run-command (window text)
-  (setf (gtk4:widget-visible-p (palette window)) nil)
-  ;(setf (gtk4:entry-buffer-text (palette window)) "")
   (let ((result (gethash text *commands*)))
     (when result (funcall result window))))
+
 
 (defun open-command-palette (window)
   (setf (gtk4:widget-visible-p (palette window)) t)
@@ -46,7 +59,7 @@
 (defvar +default-menu-desc+
   (list
    (list "View"
-         (cons "file Open" (lambda (window) (print "file opened!")))
+         (cons "File Open" (lambda (window) (print "file opened!")))
          (cons "File Save" (lambda (window) (print "file saved!")))
          (cons "File New" (lambda (window) (print "file new!"))))
    (list "Settings"
@@ -56,7 +69,18 @@
    (list "Actions"
          (cons "Command"
                (lambda (window)
-                 (open-command-palette window))))))
+                 (open-command-palette window))))
+   (list "Help"
+         (cons "About"
+               (lambda (window)
+                 (print "About")))
+         (cons "Tutorial"
+               (lambda (window)
+                 (print "Tutorial")))
+         (cons "Where is...?"
+               (lambda (window)
+                 (print "Where is...?"))))))
+
 
 (defun make-initial-menu-desc ()
   (reduce #'merge-menu-descs
@@ -64,7 +88,6 @@
 
 
 ;; Eagerly use menu-2's item
-;; TODO: merge in any toplevel items occuring 
 (defun merge-menu-descs (menu-1 menu-2)
   (flet ((merge-elements (name result child)
            (if result
@@ -78,9 +101,10 @@
                (iter (for (name . child) in menu-1)
                  (let ((res (assoc name menu-2 :test #'equal)))
                    (collect (merge-elements name res child)))))
+
              (menu-2-merge
                (iter (for (name . child) in menu-2)
-                          (unless (assoc name menu-1)
+                          (unless (assoc name menu-1 :test #'equal)
                             (collect (cons name child))))))
          (append menu-1-merge menu-2-merge)))
 
@@ -94,10 +118,9 @@
     (iter (for (name . fun) in submenu-items)
       (with submenu = (gio:make-menu))
       (let* ((action-name (string (gensym)))
+             (capture-fun fun)
              (item (gio:make-menu-item
-                    :detailed-action
-                    ;; TODO: remove window.??
-                    (concatenate 'string "window." action-name)
+                    :detailed-action (concatenate 'string "window." action-name)
                     :model menu
                     :label name))
              (action
@@ -109,7 +132,7 @@
         (gtk4:connect action "activate"
                       (lambda (w u)
                         (declare (ignore w u))
-                        (funcall fun window))))
+                        (funcall capture-fun window))))
       (finally
        (gio:menu-append-submenu menu subheading submenu)))
     (finally
@@ -172,7 +195,10 @@
       (gtk4:connect palette "activate"
                     (lambda (widget)
                       (let ((text (gtk4:entry-buffer-text (gtk4:entry-buffer widget))))
+                        (setf (gtk4:widget-visible-p (palette window)) nil)
+                        (setf (gtk4:entry-buffer-text (gtk4:entry-buffer (palette window))) "")
                         (run-command window text))))
+
       (gtk4:overlay-add-overlay overlay palette)
       (setf (gtk4:widget-vexpand-p palette) nil)
       (setf (gtk4:widget-visible-p palette) nil)

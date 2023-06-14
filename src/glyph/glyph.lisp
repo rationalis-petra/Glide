@@ -1,3 +1,20 @@
+;;;; glyph.lisp
+
+;; Copyright (C) 2023 Connor Redfern
+;;
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 (in-package :glyph)
 
 
@@ -10,7 +27,7 @@
     (gtk4:connect btn "clicked"
                   (lambda (btn)
                     (declare (ignore btn))
-                    (when *gl-connections-model*
+                    (unless (emptyp *gl-connections-model*)
                       (run-code
                        (get-element 0 *gl-connections-model*)
                        (text-model-string (view-model view))))))
@@ -47,8 +64,6 @@
                       :model (get-element 0 *gl-connections-model*)))
       (print "No server available")))
 
-(defvar +menu-addons+
-  (list))
 
 (defparameter +glyph-plugin+
   (make-instance
@@ -60,18 +75,21 @@
                (list "glyph:connections" #'list-connections)
                (list "glyph:server" #'show-server)
                (list "glyph:playground" #'new-playground)))
+
    :views (list 'glyph-view)
+
    :menu-bar-submenus (list
                        (list "View"
-                             (cons "connections" #'list-connections)
-                             (cons "server" #'show-server)
-                             (cons "playground" #'new-playground)))
+                             (cons "Connections" #'list-connections)
+                             (cons "Server" #'show-server)
+                             (cons "Playground" #'new-playground)))
    :models ()))
 
 
 (defvar has-init nil)
-
 (unless has-init
   (progn
+    ;; TODO: remove this!
+    ;(make-connection)
     (setf has-init t)
     (register-plugin +glyph-plugin+)))
