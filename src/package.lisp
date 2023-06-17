@@ -18,11 +18,15 @@
 (defpackage glide
   (:use :cl :iterate :trivial-utf-8)
   (:export
+   ;; main function, for easy running
+   :main :glide-app
+   ;; customization
+   :*make-default-layout*
+
    ;; window stuf
    :window
    :window-add-view
-   ;; main function, for easy running
-   :main :glide-app
+
    ;; Plugin hook interface
    :plugin :register-plugin
    ;; views

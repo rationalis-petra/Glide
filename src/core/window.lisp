@@ -146,8 +146,6 @@
                       :orientation gtk4:+orientation-vertical+
                       :spacing 10))
          (menu-bar (make-menu-bar window (make-initial-menu-desc)))
-         (start-view (make-instance 'dashboard-view))
-         (start-frame (make-instance 'frame :view start-view))
 
          (overlay (gtk4:make-overlay))
 
@@ -181,7 +179,7 @@
 
     ;; window construction
     (gtk4:box-append window-box menu-bar)
-    (setf (window-layout window) (make-single-layout start-frame))
+    (setf (window-layout window) (funcall *make-default-layout*))
     (gtk4:box-append window-box overlay)
 
     (when title (setf (gtk4:window-title gtk-window) title))

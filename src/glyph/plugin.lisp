@@ -1,4 +1,4 @@
-;;;; glyph.lisp
+;;;; plugin.lisp
 
 ;; Copyright (C) 2023 Connor Redfern
 ;;
@@ -16,24 +16,6 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 (in-package :glyph)
-
-
-(defclass glyph-view (text-view) ())
-
-
-(defmethod initialize-instance :after ((view glyph-view) &key model)
-  (let ((btn (gtk4:make-button
-              :label "Run")))
-    (gtk4:connect btn "clicked"
-                  (lambda (btn)
-                    (declare (ignore btn))
-                    (unless (emptyp *gl-connections-model*)
-                      (run-code
-                       (get-element 0 *gl-connections-model*)
-                       (text-model-string (view-model view))))))
-    (with-slots (modeline-widgets) view
-      (push btn modeline-widgets))))
-
 
 (defun hash-table-from-list (list)
   (iterate (for (key val) in list)
@@ -64,7 +46,6 @@
                       :model (get-element 0 *gl-connections-model*)))
       (print "No server available")))
 
-
 (defparameter +glyph-plugin+
   (make-instance
    'plugin
@@ -85,11 +66,15 @@
                              (cons "Playground" #'new-playground)))
    :models ()))
 
+;; (defvar make-glyph-playground-layout ()
+;;   (make-vertical-layout 
+;;     ()))
 
 (defvar has-init nil)
 (unless has-init
   (progn
     ;; TODO: remove this!
-    ;(make-connection)
     (setf has-init t)
+    ;; (make-connection)
+    ;; (setf *make-start-layout* #'make-glyph-playground-layout)
     (register-plugin +glyph-plugin+)))

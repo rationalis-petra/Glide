@@ -36,6 +36,7 @@
                              (:file "view")
                              (:file "model")
                              (:file "layout")
+                             (:file "customise")
                              (:file "window")))
 
                (:module "models"
@@ -55,6 +56,16 @@
                (:module "glyph"
                 :pathname "glyph"
                 :depends-on ("core" "views" "models")
-                :components ((:file "glyph" :depends-on ("connections"))
-                             (:file "connections" :depends-on ("package"))
+                :components ((:file "plugin" :depends-on ("views" "models"))
+                             (:module "views"
+                              :pathname "views"
+                              :depends-on ("models")
+                              :components ((:file "connection")
+                                           (:file "connections")
+                                           (:file "glyph")))
+                             (:module "models"
+                              :pathname "models"
+                              :depends-on ("package")
+                              :components ((:file "code")
+                                           (:file "connection")))
                              (:file "package")))))

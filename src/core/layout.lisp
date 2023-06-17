@@ -43,19 +43,20 @@
     :reader gtk-widget)))
 
 
-(declaim (ftype (function (frame) layout) make-single-layout))
+(declaim (ftype (function (view) layout) make-single-layout))
 (defun make-single-layout (child)
   (let* ((box (gtk:make-box :spacing 0
                            :orientation gtk4:+orientation-vertical+))
+         (frame (make-instance 'frame :view child))
          (layout (make-instance 'layout
                                 :gtk-widget box
                                 :layout-type :single
-                                :children (list child))))
+                                :children (list frame))))
     (gtk4:box-append box (gtk-widget child))
-    (setf (close-fn child)
+    (setf (close-fn frame)
           (lambda ()
-            (remove-if (lambda (elem) (eq child elem)) (children layout) )
-            (gtk4:box-remove box (gtk-widget child))))
+            (remove-if (lambda (elem) (eq frame elem)) (children layout))
+            (gtk4:box-remove box (gtk-widget frame))))
 
     layout))
 
