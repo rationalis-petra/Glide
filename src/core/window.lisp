@@ -204,7 +204,6 @@
 
 
 (defmethod (setf window-layout) (new-layout (window window))
-  ;; TODO: march down window layout & build hbox/vbox hierarchy
   (with-slots (layout layout-parent) window
     (setf (gtk4:overlay-child layout-parent) (gtk-widget new-layout))
     (setf layout new-layout)))

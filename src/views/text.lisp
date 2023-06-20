@@ -56,8 +56,9 @@
 
     ;; Set style
     (let ((style (gtk4:make-css-provider)))
-      (gtk4:css-provider-load-from-data style
-                                        "textview { font-family: JuliaMono; font-size: 10pt; }")
+      (gtk4:css-provider-load-from-data
+       style
+       "textview { font-family: JuliaMono; font-size: 10pt; }")
       (gtk4:style-context-add-provider (gtk4:widget-style-context gtk-widget) style glib:+maxuint32+))
 
     ;; Setup input mode & key controller

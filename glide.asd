@@ -7,6 +7,10 @@
   :author "Connor Redfern"
   :license "BSD-3"
   :description "An editor for Glyph source code"
+  :defsystem-depends-on (:deploy)
+  :build-operation "deploy-op"
+  :build-pathname "glide"
+  :entry-point "glide:main"
   :depends-on (;; system
                :asdf
                ;; language extensions
@@ -21,7 +25,9 @@
                :yason
                ;; gui
                :cl-glib
-               :cl-gtk4)
+               :cl-gdk4
+               :cl-gtk4
+               :lass)
   :pathname "src"
   :components (;; glide itself
                (:file "glide" :depends-on ("core" "views"))
@@ -35,6 +41,7 @@
                 :components ((:file "plugin")
                              (:file "view")
                              (:file "model")
+                             (:file "style")
                              (:file "layout")
                              (:file "customise")
                              (:file "window")))
@@ -52,7 +59,7 @@
                              (:file "list")
                              (:file "dashboard")))
 
-
+               ;; The glyph (built-in) plugin
                (:module "glyph"
                 :pathname "glyph"
                 :depends-on ("core" "views" "models")

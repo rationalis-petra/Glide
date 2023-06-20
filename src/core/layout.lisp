@@ -25,7 +25,8 @@
     :reader gtk-widget)
    (layout-type
     :initarg :layout-type
-    :reader layout-type)
+    :reader layout-type
+    :type (or (eql :single) (eql :vertical) (eql :horizontal) (eql :tab)))
    (children
     :initarg :children 
     :accessor children)))
@@ -46,13 +47,13 @@
 (declaim (ftype (function (view) layout) make-single-layout))
 (defun make-single-layout (child)
   (let* ((box (gtk:make-box :spacing 0
-                           :orientation gtk4:+orientation-vertical+))
+                            :orientation gtk4:+orientation-vertical+))
          (frame (make-instance 'frame :view child))
          (layout (make-instance 'layout
                                 :gtk-widget box
                                 :layout-type :single
                                 :children (list frame))))
-    (gtk4:box-append box (gtk-widget child))
+    (gtk4:box-append box (gtk-widget frame))
     (setf (close-fn frame)
           (lambda ()
             (remove-if (lambda (elem) (eq frame elem)) (children layout))
@@ -61,6 +62,15 @@
     layout))
 
 
+;; (defun (setf layout-type) (type layout)
+;;   (ecase type
+;;     (:single )
+;;     (:vertical)
+;;     (:horizontal)
+;;     (:tab)))
+
+
+;; TODO: change layout-add-child to accept a view!
 ;(declaim (ftype (function (layout frame &key (orientation keyword)) layout) layout-add-child))
 (defun layout-add-child (layout child &key orientation)
   (with-slots (gtk-widget layout-type children) layout

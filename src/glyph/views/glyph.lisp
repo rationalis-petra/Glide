@@ -38,4 +38,5 @@
                        (text-model-string (view-model view))))))
 
     (with-slots (modeline-widgets) view
-      (push btn modeline-widgets))))
+      (push load-btn modeline-widgets)
+      (push eval-btn modeline-widgets))))

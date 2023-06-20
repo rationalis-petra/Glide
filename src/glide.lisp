@@ -21,7 +21,6 @@
 (defun initialize (app)
   ;; Make sure state is reset 
   (setf *commands* (make-hash-table :test #'equal))
-  (setf *start-view* 'dashboard-view)
 
   ;; initialize plugins
   (mapcar #'initialize-plugin *plugins*)

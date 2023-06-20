@@ -21,7 +21,10 @@
 (defclass text-model (model)
   ((gtk-buffer
     :accessor gtk-buffer
-    :initform (gtk4:make-text-buffer :table nil)))
+    :initform (gtk4:make-text-buffer :table nil))
+   (source-file
+    :accessor source-file
+    :initform nil))
   (:documentation "Wraps a GTK4 text buffer"))
 
 
@@ -50,3 +53,10 @@
    iterator
    string
    (utf-8-byte-length string)))
+
+
+;; (declaim (ftype (function (text-model &key (log-error t)) t) text-model-save))
+;; (defun text-model-save (model)
+;;   (with-slots (source-file) model
+;;     (when source-file
+;;       ())))
