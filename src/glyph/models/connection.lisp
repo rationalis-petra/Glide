@@ -40,6 +40,19 @@
 (defvar *gl-connections-model* (make-instance 'list-model))
 
 
+(defun make-connection (&key (host "localhost") (port 8801))
+  (handler-case
+      (let* ((socket (usocket:socket-connect host port
+                                             :element-type '(unsigned-byte 8)))
+             (stream (flex:make-flexi-stream
+                      (usocket:socket-stream socket)
+                      :external-format :utf8))
+             (instance (make-instance 'glyph-connection
+                                      :stream stream)))
+        (add-element instance *gl-connections-model*)
+        instance)
+    (t (val) (format t "couldn't connect!, error: ~A~%" val))))
+
 (defmethod initialize-instance :after ((conn glyph-connection) &key stream)
   (setf (listener-thread conn)
         (bt:make-thread (lambda () (recv-message conn)))))

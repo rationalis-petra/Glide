@@ -17,10 +17,16 @@
 
 (in-package :glide)
 
-;; stuff relating to window layout
+;; This file contains 3 classes, which help in the management and layout of views 
+;; Layout
+;; Frame
+;; Modeline
 
 (defclass layout ()
-  ((gtk-widget
+  ((parent
+    :initarg :parent
+    :reader :parent)
+   (gtk-widget
     :initarg :gtk-widget
     :reader gtk-widget)
    (layout-type
@@ -31,28 +37,18 @@
     :initarg :children 
     :accessor children)))
 
-
-(defclass frame ()
-  ((current-view
-    :initarg :view
-    :accessor frame-view)
-   (modeline
-    :reader frame-modeline)
-   (close-fn
-    :accessor close-fn)
-   (gtk-widget
-    :reader gtk-widget)))
-
-
-(declaim (ftype (function (view) layout) make-single-layout))
-(defun make-single-layout (child)
+(declaim (ftype (function (t view) layout) make-single-layout))
+(defun make-single-layout (parent child)
   (let* ((box (gtk:make-box :spacing 0
                             :orientation gtk4:+orientation-vertical+))
          (frame (make-instance 'frame :view child))
          (layout (make-instance 'layout
                                 :gtk-widget box
+                                :parent parent
                                 :layout-type :single
                                 :children (list frame))))
+
+    (gtk4:widget-add-css-class (gtk-widget frame) "frame")
     (gtk4:box-append box (gtk-widget frame))
     (setf (close-fn frame)
           (lambda ()
@@ -61,17 +57,35 @@
 
     layout))
 
-
-;; (defun (setf layout-type) (type layout)
-;;   (ecase type
-;;     (:single )
-;;     (:vertical)
-;;     (:horizontal)
-;;     (:tab)))
+(declaim (ftype (function (layout (or :vertical :horizontal :tab)) null) (setf layout-type)))
+(defun (setf layout-type) (layout new-type)
+  (unless (eql new-type (layout-type layout))
+    (flet ((swap-widget-to (new-widget append-fn)
+             ;; TODO: this wlil cause a bug!
+             (gtk4:box-remove (gtk-widget (parent layout)))
+             (iter (for child in (children layout))
+               (append-fn child))))
+      (ecase new-type
+        (:vertical
+         (swap-widget-to
+          (gtk:make-box :spacing 0 :orientation gtk4:+orientation-vertical+)
+          #'gtk4:box-append))
+        (:horizontal
+         (swap-widget-to
+          (gtk:make-box :spacing 0 :orientation gtk4:+orientation-horizontal+)
+          #'gtk4:box-append))
+        (:tab
+         (swap-widget-to
+          (gtk:make-notebook)
+          (lambda (notebook child)
+            (gtk4:notebook-append-page
+             notebook
+             child
+             (write-to-string (type-of notebook))))))))))
 
 
 ;; TODO: change layout-add-child to accept a view!
-;(declaim (ftype (function (layout frame &key (orientation keyword)) layout) layout-add-child))
+;; (declaim (ftype (function (layout frame &key (orientation keyword)) layout) layout-add-child))
 (defun layout-add-child (layout child &key orientation)
   (with-slots (gtk-widget layout-type children) layout
     (setf (close-fn child) 
@@ -85,34 +99,58 @@
     (setf layout-type orientation)))
 
 
+(defclass frame ()
+  ((view
+    :initarg :view
+    :accessor view
+    :type view)
+   (modeline
+    :reader modeline)
+   (close-fn
+    :accessor close-fn)
+   (gtk-widget
+    :reader gtk-widget)))
+
+
 (defmethod initialize-instance :after ((frame frame) &key view)
   (let ((box (gtk4:make-box
               :orientation gtk4:+orientation-vertical+
-              :spacing 10))
-        (modeline (gtk4:make-box
-              :orientation gtk4:+orientation-horizontal+
-              :spacing 10))
-        (label (gtk4:make-label :str (view-name view)))
-        (fill (gtk4:make-box :spacing 0 :orientation gtk4:+orientation-horizontal+))
-        (close-btn (gtk4:make-button :label "X")))
-    (setf (slot-value frame 'modeline) modeline)
+              :spacing 10)))
+
     (setf (slot-value frame 'gtk-widget) box)
-
-    (gtk4:box-append modeline label)
-    (iter (for widget in (modeline-widgets view))
-      (gtk4:box-append modeline widget))
-
-    (setf (gtk4:widget-hexpand-p fill) t)
-    (gtk4:box-append modeline fill)
-    (gtk4:box-append modeline close-btn)
-    ;; (setf (gtk4:widget-hexpand-p box) t)
-    ;; (setf (gtk4:widget-vexpand-p box) t)
+    (setf (slot-value frame 'modeline)
+          (make-instance 'modeline :frame frame))
 
     (gtk4:box-append box (gtk-widget view))
-    (gtk4:box-append box modeline)
+    (gtk4:box-append box (gtk-widget (modeline frame)))))
 
-    ;; Do this last, so that 'mk-close' gets an (almost) fully initialized frame
+
+(defclass modeline ()
+  ((gtk-widget
+    :accessor gtk-widget)))
+
+(defmethod initialize-instance :after ((modeline modeline) &key frame)
+  (setf (gtk-widget modeline)
+        (gtk4:make-box
+         :orientation gtk4:+orientation-horizontal+
+         :spacing 10))
+  (gtk4:widget-add-css-class (gtk-widget modeline) "modeline")
+
+  (let ((label (gtk4:make-label :str (view-name (view frame)))))
+    (gtk4:box-append (gtk-widget modeline) label))
+
+  (let ((fill (gtk4:make-box :spacing 0
+                             :orientation gtk4:+orientation-horizontal+)))
+    (setf (gtk4:widget-hexpand-p fill) t)
+    (gtk4:box-append (gtk-widget modeline) fill))
+
+  ;; User-defined widgets 
+  (iter (for widget in (modeline-widgets (view frame)))
+        (gtk4:box-append (gtk-widget modeline) widget))
+
+  (let ((close-btn (gtk4:make-button :label "×")))
     (gtk4:connect close-btn "clicked"
                   (lambda (button)
                     (declare (ignore button))
-                    (funcall (close-fn frame))))))
+                    (funcall (close-fn frame))))
+    (gtk4:box-append (gtk-widget modeline) close-btn)))

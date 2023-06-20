@@ -22,6 +22,8 @@
    :main :glide-app
    ;; customization
    :*make-default-layout*
+   :deftheme
+   :+explorer-theme+
 
    ;; window stuf
    :window

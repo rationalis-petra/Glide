@@ -54,13 +54,6 @@
                       :buffer (gtk-buffer model)))
     (setf (gtk4:widget-vexpand-p gtk-widget) t)
 
-    ;; Set style
-    (let ((style (gtk4:make-css-provider)))
-      (gtk4:css-provider-load-from-data
-       style
-       "textview { font-family: JuliaMono; font-size: 10pt; }")
-      (gtk4:style-context-add-provider (gtk4:widget-style-context gtk-widget) style glib:+maxuint32+))
-
     ;; Setup input mode & key controller
     (setf input-state (make-instance 'input-mode-state :input-mode input-mode))
     (let ((key-controller (gtk4:make-event-controller-key)))

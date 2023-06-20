@@ -25,12 +25,6 @@
          (repl-view (gtk4:make-text-view
                      :buffer (glide:gtk-buffer (repl-model model)))))
 
-    ;; Set style
-    (let ((style (gtk4:make-css-provider)))
-      (gtk4:css-provider-load-from-data style
-                                        "textview { font-family: JuliaMono; font-size: 10pt; }")
-      (gtk4:style-context-add-provider (gtk4:widget-style-context repl-view) style glib:+maxuint32+))
-
     (gtk4:box-append box repl-view)
     (setf (gtk-widget view) box)))
 

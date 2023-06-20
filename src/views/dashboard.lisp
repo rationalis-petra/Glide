@@ -29,8 +29,13 @@
            ;; TODO: change this to home/config dir
            (asdf:system-relative-pathname (asdf:find-system :glide) name)))
 
-    (let ((image (gtk4:make-image :filename (namestring (relpath "assets/glider.png")))))
-      (setf (gtk4:widget-size-request image) '(256 256))
+    (let ((container (gtk4:make-box :spacing 0 :orientation gtk4:+orientation-vertical+))
+          (fill (gtk4:make-box :spacing 0 :orientation gtk4:+orientation-vertical+))
+          (image (gtk4:make-image :filename (namestring (relpath "assets/glider.png")))))
+      (setf (gtk4:widget-size-request image) '(512 512))
+      (gtk4:box-append container image)
+      (gtk4:box-append container fill)
+      (setf (gtk4:widget-vexpand-p fill) t)
       ; (setf (gtk4:picture-can-shrink-p image) t)
       ; (setf (gtk4:picture-keep-aspect-ratio-p image) t)
-      (setf (gtk-widget view) image))))
+      (setf (gtk-widget view) container))))

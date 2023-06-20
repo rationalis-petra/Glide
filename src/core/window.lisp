@@ -179,7 +179,7 @@
 
     ;; window construction
     (gtk4:box-append window-box menu-bar)
-    (setf (window-layout window) (funcall *make-default-layout*))
+    (setf (window-layout window) (funcall *make-default-layout* window))
     (gtk4:box-append window-box overlay)
 
     (when title (setf (gtk4:window-title gtk-window) title))

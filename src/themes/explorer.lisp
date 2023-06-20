@@ -1,4 +1,4 @@
-;;;; customise.lisp
+;;;; explorer.lisp
 
 ;; Copyright (C) 2023 Connor Redfern
 ;;
@@ -17,10 +17,10 @@
 
 (in-package :glide)
 
-;; This file defines several globals which are used as (default) customization
-;; options, e.g. themes, default window layout, etc.
-;;
+(defparameter +explorer-theme+
+  (make-instance 'color-theme
+                 :fg-primary 'white
+                 :fg-secondary 'cyan
 
-(defvar *make-default-layout*
-  (lambda (parent)
-    (make-single-layout parent (make-instance 'dashboard-view))))
+                 :bg-primary "#212025"
+                 :bg-secondary "#1e2b40"))

@@ -59,6 +59,11 @@
                              (:file "list")
                              (:file "dashboard")))
 
+               (:module "themes"
+                :pathname "themes"
+                :depends-on ("core")
+                :components ((:file "explorer")))
+
                ;; The glyph (built-in) plugin
                (:module "glyph"
                 :pathname "glyph"

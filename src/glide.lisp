@@ -21,6 +21,7 @@
 (defun initialize (app)
   ;; Make sure state is reset 
   (setf *commands* (make-hash-table :test #'equal))
+  (set-app-theme +explorer-theme+) 
 
   ;; initialize plugins
   (mapcar #'initialize-plugin *plugins*)
