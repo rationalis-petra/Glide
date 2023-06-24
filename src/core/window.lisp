@@ -19,6 +19,29 @@
 (in-package :glide)
 
 
+(defclass minibuffer ()
+  ((gtk-widget
+    :accessor gtk-widget)
+   (text-model
+    :accessor text-model)))
+
+(defmethod initialize-instance :after ((minibuffer minibuffer) &key)
+  (let* ((text-model (make-instance 'text-model))
+         (gtk-widget (gtk4:make-text-view
+                      :buffer (gtk-buffer text-model))))
+    (setf (gtk-widget minibuffer) gtk-widget)
+    (setf (text-model minibuffer) text-model)
+
+    (setf (gtk4:text-view-editable-p gtk-widget) nil)
+    (gtk4:widget-add-css-class gtk-widget "minibuffer")
+
+    (observe minibuffer *info-mailbox*)
+    (observe minibuffer *error-mailbox*)
+    (observe minibuffer *warning-mailbox*)))
+
+(defmethod notify ((minibuffer minibuffer) message)
+  (setf (text-model-string (text-model minibuffer)) message))
+
 (defclass window ()
   ((focus-view
     :accessor window-focus-view
@@ -37,7 +60,7 @@
    (keymap
     :accessor window-keymap)
    (minibuffer
-    :accessor minifbuffer)
+    :accessor minibuffer)
 
    ;; "internal" slots → do not form a public interface
    (layout-parent)
@@ -183,6 +206,11 @@
     (gtk4:box-append window-box menu-bar)
     (setf (layout window) (funcall *make-default-layout* window))
     (gtk4:box-append window-box overlay)
+
+    ;; minibuffer
+    (let ((minibuffer (make-instance 'minibuffer)))
+      (setf (minibuffer window) minibuffer)
+      (gtk4:box-append window-box (gtk-widget minibuffer)))
 
     (when title (setf (gtk4:window-title gtk-window) title))
     (setf (gtk4:window-child gtk-window) window-box)

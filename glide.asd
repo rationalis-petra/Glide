@@ -47,7 +47,7 @@
                              (:file "layout")
                              (:file "reporting")
                              (:file "customise")
-                             (:file "window")))
+                             (:file "window" :depends-on ("layout" "reporting" "customise"))))
 
                (:module "models"
                 :pathname "models"

@@ -35,6 +35,10 @@
   "Get a string copy of the underlying text"
   (gtk4:text-buffer-text (gtk-buffer model)))
 
+(defun (setf text-model-string) (string model)
+  "Sets the underlying string of the text buffer"
+  (setf (gtk4:text-buffer-text (gtk-buffer model)) string))
+
 (declaim (ftype (function (text-model string) null) insert-at-cursor))
 (defun insert-at-cursor (model string)
   (gir:invoke

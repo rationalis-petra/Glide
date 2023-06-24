@@ -30,14 +30,13 @@
     :initform :centre)
    (inner-widget
     :accessor inner-widget)
-   (close-fn
-    :accessor close-fn
-    :initarg :close-fn
-    :initform (lambda ()))))
+   (parent
+    :accessor parent
+    :initarg :parent)))
 
 (defclass single-layout (layout)
   ((child
-    :initarg :child
+    :reader :child
     :accessor child)))
 
 (defclass paned-layout (layout)
@@ -70,8 +69,8 @@
     :reader modeline)
    (gtk-widget
     :reader gtk-widget)
-   (close-fn
-    :accessor close-fn)
+   (parent
+    :accessor parent)
    (focus-controller
     :initarg focus-controller)))
 
@@ -82,10 +81,13 @@
     :accessor gtk-widget)))
 
 
+(defgeneric (setf child) (child parent))
+(defmethod (setf child) (child (parent layout))
+  ;; todo set gtk-child also
+  (setf (slot-value parent 'child) child))
 
 (defmethod initialize-instance :after
-    ((layout single-layout) &key child close-fn)
-  (declare (ignore close-fn))
+    ((layout single-layout) &key child)
   (let* ((gtk-widget (gtk4:make-box :spacing 0 :orientation gtk4:+orientation-vertical+))
          (inner-widget (gtk4:make-box :spacing 0 :orientation gtk4:+orientation-vertical+))
          (wrapped-child (wrap-child-for layout child)))
@@ -100,8 +102,7 @@
     layout))
 
 (defmethod initialize-instance :after
-    ((layout paned-layout) &key orientation start-child end-child close-fn)
-  (declare (ignore close-fn))
+    ((layout paned-layout) &key orientation start-child end-child)
   (let* ((gtk-widget (gtk4:make-box :spacing 0 :orientation gtk4:+orientation-vertical+))
          (paned (gtk4:make-paned
                  :orientation (if (eq orientation :vertical)
@@ -122,8 +123,7 @@
     layout))
 
 (defmethod initialize-instance :after
-    ((layout tabbed-layout) &key children close-fn)
-  (declare (ignore close-fn))
+    ((layout tabbed-layout) &key children)
   (let* ((gtk-widget (gtk4:make-box :spacing 0 :orientation gtk4:+orientation-vertical+))
          (notebook (gtk:make-notebook))
          (wrapped-children (mapcar #'wrap-child-for children)))
@@ -272,7 +272,6 @@
          (setf (orientation layout) :horizontal)))
       
       (:none
-       (format t "matched none, transient: ~A~%" (transient-p old-child))
        (if (transient-p old-child)
            (let ((wrapped-new-child (wrap-child-for layout child)))
              (gtk4:box-remove inner-widget (gtk-widget old-child))
@@ -283,7 +282,6 @@
                  (wrapped-old-child (wrap-child-for layout old-child))
                  (wrapped-new-child (wrap-child-for layout child)))
 
-             (print "taking second path")
              (gtk4:box-remove inner-widget (gtk-widget wrapped-old-child))
              (setf (gtk4:paned-start-child paned) (gtk-widget wrapped-old-child))
              (setf (gtk4:paned-end-child paned) (gtk-widget wrapped-new-child))
@@ -327,8 +325,7 @@
                    (new-layout (make-instance 'paned-layout
                                               :orientation orientation
                                               :start-child start-child
-                                              :end-child end-child
-                                              :close-fn (lambda () ())))
+                                              :end-child end-child))
                    (wrapped-new-layout (wrap-child-for layout new-layout))
                    (wrapped-child (wrap-child-for layout child)))
 
@@ -346,6 +343,9 @@
 
       (t (error "TODO-match")))
     layout))
+
+(defun remove-child (parent child)
+  (message-info "removing child"))
 
 
 (defmethod initialize-instance :after ((frame frame) &key view)
@@ -392,6 +392,6 @@
     (gtk4:connect close-btn "clicked"
                   (lambda (button)
                     (declare (ignore button))
-                    (funcall (close-fn frame))))
+                    (funcall (remove-child (parent frame) frame))))
     (gtk4:box-append (gtk-widget modeline) close-btn)))
 

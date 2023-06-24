@@ -23,17 +23,22 @@
   (:documentation "A dashboard or start-screen"))
 
 
-(defmethod initialize-instance :after ((view dashboard-view) &key model)
+(defmethod initialize-instance :after ((dashboard dashboard-view) &key model)
   (declare (ignore model))
   (flet ((relpath (name)
            ;; TODO: change this to home/config dir
            (asdf:system-relative-pathname (asdf:find-system :glide) name)))
 
     (let ((container (gtk4:make-box :spacing 0 :orientation gtk4:+orientation-vertical+))
-          (image (gtk4:make-image :filename (namestring (relpath "assets/glider.png")))))
+          (image (gtk4:make-image :filename (namestring (relpath "assets/glider.png"))))
+          (text (gtk4:make-label :str "G L I D E")))
       (setf (gtk4:widget-size-request image) '(512 512))
+
+      (gtk4:widget-add-css-class text "stylish-text")
+      (gtk4:widget-add-css-class text "title-text")
       (gtk4:box-append container image)
+      (gtk4:box-append container text)
       ; (setf (gtk4:picture-can-shrink-p image) t)
       ; (setf (gtk4:picture-keep-aspect-ratio-p image) t)
-      (setf (gtk-widget view) container)
-      (setf (transient-p view) t))))
+      (setf (gtk-widget dashboard) container)
+      (setf (transient-p dashboard) t))))

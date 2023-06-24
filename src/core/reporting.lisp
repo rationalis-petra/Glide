@@ -29,14 +29,25 @@
    (lock
     :reader lock
     :initform (bt:make-lock))
+   (observers
+    :accessor observers
+    :initform (make-array 10 :fill-pointer 0)
+    :type list)
    (messages
     :reader messages
     :initform (make-array 10 :fill-pointer 0)
     :type (array string))))
 
+(defgeneric notify (observer message))
+
+(defun observe (observer mailbox)
+  (bt:with-lock-held ((lock mailbox))
+    (vector-push-extend observer (observers mailbox))))
+
 (defun send-message (message mailbox)
   (bt:with-lock-held ((lock mailbox))
-    (vector-push-extend message (messages mailbox))))
+    (vector-push-extend message (messages mailbox))
+    (map 'vector (lambda (observer) (notify observer message)) (observers *info-mailbox*))))
 
 (defvar *info-mailbox*    (make-instance 'mailbox))
 (defvar *error-mailbox*   (make-instance 'mailbox))

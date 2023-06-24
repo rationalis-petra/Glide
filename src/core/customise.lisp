@@ -25,7 +25,6 @@
 (defvar *make-default-layout*
   (lambda (parent)
     (make-instance 'single-layout
-                   :close-fn (lambda () ()) 
                    :child (make-instance 'dashboard-view))))
 
 (defvar *make-default-view*

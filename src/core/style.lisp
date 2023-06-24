@@ -122,7 +122,14 @@
                (.modeline
                 :border-style solid
                 :border-width 2px 0px
-                :border-color ,bg-secondary)))))
+                :border-color ,bg-secondary)
+               (.minibuffer
+                :font-size 14
+                :padding 4px 0px)
+               (.stylish-text
+                :font-family "Anurati")
+               (.title-text
+                :font-size 30px)))))
         (provider (gtk4:make-css-provider)))
     (gtk4:css-provider-load-from-data
        provider
