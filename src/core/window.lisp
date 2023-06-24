@@ -32,10 +32,12 @@
     :reader action-group
     :initform (gio:make-simple-action-group))
    (layout
-    :reader window-layout
+    :reader layout
     :documentation "")
    (keymap
     :accessor window-keymap)
+   (minibuffer
+    :accessor minifbuffer)
 
    ;; "internal" slots → do not form a public interface
    (layout-parent)
@@ -179,7 +181,7 @@
 
     ;; window construction
     (gtk4:box-append window-box menu-bar)
-    (setf (window-layout window) (funcall *make-default-layout* window))
+    (setf (layout window) (funcall *make-default-layout* window))
     (gtk4:box-append window-box overlay)
 
     (when title (setf (gtk4:window-title gtk-window) title))
@@ -202,7 +204,7 @@
       (setf (gtk4:widget-visible-p palette) nil)
       (setf (slot-value window 'palette) palette))))
 
-(defmethod (setf window-layout) (new-layout (window window))
+(defmethod (setf layout) (new-layout (window window))
   (with-slots (layout layout-parent) window
     (setf (gtk4:overlay-child layout-parent) (gtk-widget new-layout))
     (setf layout new-layout)))
@@ -216,14 +218,14 @@
   (case location-preference
     (:window-tab
      (layout-add-child-absolute
-      (window-layout window) view
+      (layout window) view
       :layout-location :outside))
     (:window-bottom
      (layout-add-child-absolute
-      (window-layout window) view
+      (layout window) view
       :layout-location :bottom))
     (:none
-     (layout-add-child-absolute (window-layout window) view))
+     (layout-add-child-absolute (layout window) view))
     (otherwise
      (format t "err: preferred location ~A not recognized~%" preferred-location))))
 
