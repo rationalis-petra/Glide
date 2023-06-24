@@ -34,36 +34,73 @@
 (defgeneric get-style-provider (theme))
 
 (defclass color-theme (theme)
-  ((bg-primary)
+  ((fg-primary)
+   (bg-primary)
+
+   (fg-secondary)
    (bg-secondary)
-   (fg-primary)
-   (fg-secondary)))
+
+   (fg-muted)
+   (bg-muted)
+
+   (fg-info)
+   (fg-warning)
+   (fg-error)))
 
 (defmethod initialize-instance ((theme color-theme)
                                 &key
                                   bg-primary
                                   bg-secondary
                                   fg-primary
-                                  fg-secondary)
-  (with-slots ((bp bg-primary) (bs bg-secondary) (fp fg-primary) (fs fg-secondary)) theme
+                                  fg-secondary
+                                  fg-muted
+                                  bg-muted)
+  (with-slots ((bp bg-primary) (bs bg-secondary)
+               (fp fg-primary) (fs fg-secondary)
+               (fm fg-muted)   (bm bg-muted)) theme
     (setf bp bg-primary
           bs bg-secondary
           fp fg-primary
-          fs fg-secondary)))
+          fs fg-secondary
+          fm fg-muted
+          bm bg-muted)))
 
 (defmethod get-style-provider ((theme color-theme))
   (let ((style-text
-          (with-slots (bg-primary bg-secondary fg-primary fg-secondary) theme
+          (with-slots (fg-primary   bg-primary
+                       fg-secondary bg-secondary
+                       fg-muted     bg-muted) theme
             (apply
              #'lass:compile-and-write
-             `(((:or window popover textview button listview)
+             `(((:or window popover
+                     textview button
+                     listview notebook
+                     stack)
                :color ,fg-primary
                :background-color ,bg-primary)
 
-               (entry
+               (headerbar
+                :color ,bg-primary
+                :background-image none
+                :background-color ,fg-primary)
+               ((headerbar button)
+                :color ,bg-primary
+                :background-color ,fg-primary)
+               ((:and tab :checked)
                 :color ,fg-primary
-                :border-radius 0
-                :background-color ,bg-secondary)
+                :border none
+                :background-color ,bg-primary)
+               ((:or tabs tab header.top)
+                :color ,fg-muted
+                :border none
+                :background-color ,bg-muted)
+               (notebook
+                :border-style none)
+
+               (entry
+                :color ,fg-muted
+                :background-color ,bg-muted
+                :border-radius 0)
 
                (popover (contents
                          :color ,fg-primary
@@ -72,6 +109,10 @@
                 :border-style none)
                (textview
                 :font-family "JuliaMono")
+               (separator
+                :background-image ,(format nil "linear-gradient(~A, ~A)"
+                                           bg-secondary
+                                           bg-secondary))
                ((:and .activatable :selected)
                 :background-color ,bg-secondary)
                (button

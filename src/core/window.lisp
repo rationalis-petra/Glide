@@ -58,14 +58,14 @@
 
 (defvar +default-menu-desc+
   (list
-   (list "View"
-         (cons "File Open" (lambda (window) (print "file opened!")))
-         (cons "File Save" (lambda (window) (print "file saved!")))
-         (cons "File New" (lambda (window) (print "file new!"))))
+   (list "Views"
+         (cons "File Open" (lambda (window) (message-info "file opened!")))
+         (cons "File Save" (lambda (window) (message-info "file saved!")))
+         (cons "File New" (lambda (window) (message-info "file new!"))))
    (list "Settings"
-         (cons "Application" (lambda (window) (print "application settings")))
-         (cons "Window" (lambda (window) (print "window settings")))
-         (cons "View" (lambda (window) (print "view settings"))))
+         (cons "Application" (lambda (window) (message-info "application settings")))
+         (cons "Window" (lambda (window) (message-info "window settings")))
+         (cons "View" (lambda (window) (message-info "view settings"))))
    (list "Actions"
          (cons "Command"
                (lambda (window)
@@ -73,13 +73,13 @@
    (list "Help"
          (cons "About"
                (lambda (window)
-                 (print "About")))
+                 (message-info "About")))
          (cons "Tutorial"
                (lambda (window)
-                 (print "Tutorial")))
+                 (message-info "Tutorial")))
          (cons "Where is...?"
                (lambda (window)
-                 (print "Where is...?"))))))
+                 (message-info "Where is...?"))))))
 
 
 (defun make-initial-menu-desc ()
@@ -144,7 +144,7 @@
                               :application app))
          (window-box (gtk4:make-box
                       :orientation gtk4:+orientation-vertical+
-                      :spacing 10))
+                      :spacing 0))
          (menu-bar (make-menu-bar window (make-initial-menu-desc)))
 
          (overlay (gtk4:make-overlay))
@@ -202,16 +202,28 @@
       (setf (gtk4:widget-visible-p palette) nil)
       (setf (slot-value window 'palette) palette))))
 
-
 (defmethod (setf window-layout) (new-layout (window window))
   (with-slots (layout layout-parent) window
     (setf (gtk4:overlay-child layout-parent) (gtk-widget new-layout))
     (setf layout new-layout)))
 
+;; TODO: switch on preferred-location, can be
+;; nil (no preference)
+;; local-(tab left right top bottom)
+;; window-(tab left right top bottom centre)
 
+(defun window-add-view (window view &key (location-preference :none))
+  (case location-preference
+    (:window-tab
+     (layout-add-child-absolute
+      (window-layout window) view
+      :layout-location :outside))
+    (:window-bottom
+     (layout-add-child-absolute
+      (window-layout window) view
+      :layout-location :bottom))
+    (:none
+     (layout-add-child-absolute (window-layout window) view))
+    (otherwise
+     (format t "err: preferred location ~A not recognized~%" preferred-location))))
 
-(defun window-add-view (window view)
-  (layout-add-child
-   (window-layout window)
-   (make-instance 'frame :view view)
-   :orientation :horizontal))

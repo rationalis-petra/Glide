@@ -28,7 +28,14 @@
     :documentation "Widgets to put on the modeline")
    (gtk-widget
     :accessor gtk-widget
-    :documentation "The gtk4 widget that this view")))
+    :documentation "The gtk4 widget that this view")
+   (transient-p
+    :accessor transient-p
+    :initform nil
+    :documentation "When true, this view will be replaced when the window
+  attempts to add a new view at this location. When false, this view is
+  persistent, and attempting to add a new view at the location of the current
+  view will cause it to split.")))
 
 
 ;; class-level generics
@@ -44,8 +51,8 @@
 
 
 ;; instance-level generics
-(defgeneric view-name (view)
-  (:documentation "Invoked on a view when the underlying model is updated")
+(defgeneric name (view)
+  (:documentation "Return the name of the object in question")
   (:method (view) (string (type-of view))))
 
 (defgeneric model-updated (view)

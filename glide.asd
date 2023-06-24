@@ -15,9 +15,11 @@
                :asdf
                ;; language extensions
                :alexandria
+               :trivia
                :iterate
                :trivial-utf-8
                ;; portability
+               :uiop
                :bordeaux-threads
                ;; Networking (primarily intended for plugin use)
                :usocket
@@ -43,6 +45,7 @@
                              (:file "model")
                              (:file "style")
                              (:file "layout")
+                             (:file "reporting")
                              (:file "customise")
                              (:file "window")))
 

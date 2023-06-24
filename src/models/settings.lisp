@@ -1,4 +1,4 @@
-;;;; explorer.lisp
+;;;; settings.lisp
 
 ;; Copyright (C) 2023 Connor Redfern
 ;;
@@ -17,13 +17,14 @@
 
 (in-package :glide)
 
-(defparameter +explorer-theme+
-  (make-instance 'color-theme
-                 :fg-primary "#a8a7ab"
-                 :bg-primary "#212025"
+;; The settings model simple wraps a settings object defined in core. It is not
+;; very interesting... 
 
-                 :fg-muted "#929096"
-                 :bg-muted "#393740"
+;; TODO: change parent to object-model!
+(defclass settings-model (model)
+  ((settings-object
+    :type settings)))
 
-                 :fg-secondary "#83accc"
-                 :bg-secondary "#1e2b40"))
+
+;; The settings model simple wraps a settings object defined in core. It is not
+;; very interesting... 

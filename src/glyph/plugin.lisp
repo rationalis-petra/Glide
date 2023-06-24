@@ -43,8 +43,9 @@
       (window-add-view
        window
        (make-instance 'connection-view
-                      :model (get-element 0 *gl-connections-model*)))
-      (print "No server available")))
+                      :model (get-element 0 *gl-connections-model*))
+       :location-preference :window-bottom)
+      (message-error "No server available")))
 
 (defparameter +glyph-plugin+
   (make-instance
@@ -60,7 +61,7 @@
    :views (list 'glyph-view)
 
    :menu-bar-submenus (list
-                       (list "View"
+                       (list "Views"
                              (cons "Connections" #'list-connections)
                              (cons "Server" #'show-server)
                              (cons "Playground" #'new-playground)))

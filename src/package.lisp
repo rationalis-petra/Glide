@@ -16,10 +16,14 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 (defpackage glide
-  (:use :cl :iterate :trivial-utf-8)
+  (:use :cl :iterate :trivial-utf-8 :trivia)
   (:export
    ;; main function, for easy running
    :main :glide-app
+   :message-info
+   :message-warning
+   :message-error
+
    ;; customization
    :*make-default-layout*
    :deftheme

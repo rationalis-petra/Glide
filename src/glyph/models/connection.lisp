@@ -51,7 +51,7 @@
                                       :stream stream)))
         (add-element instance *gl-connections-model*)
         instance)
-    (t (val) (format t "couldn't connect!, error: ~A~%" val))))
+    (t (val) (message-error (format nil "couldn't connect!, error: ~A" val)))))
 
 (defmethod initialize-instance :after ((conn glyph-connection) &key stream)
   (setf (listener-thread conn)

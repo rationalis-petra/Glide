@@ -1,4 +1,4 @@
-;;;; explorer.lisp
+;;;; object.lisp
 
 ;; Copyright (C) 2023 Connor Redfern
 ;;
@@ -17,13 +17,12 @@
 
 (in-package :glide)
 
-(defparameter +explorer-theme+
-  (make-instance 'color-theme
-                 :fg-primary "#a8a7ab"
-                 :bg-primary "#212025"
+;; This file defines the 'object' model: a model whose data is a lisp object.
+;; It is intended that views over this model offer introspection capabilities 
+;; allowing one to view the object's class, slots, etc.
 
-                 :fg-muted "#929096"
-                 :bg-muted "#393740"
+(defclass object-model (model)
+  ((lisp-object
+    :type settings)))
 
-                 :fg-secondary "#83accc"
-                 :bg-secondary "#1e2b40"))
+

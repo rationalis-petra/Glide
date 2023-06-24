@@ -1,4 +1,4 @@
-;;;; explorer.lisp
+;;;; settings.lisp
 
 ;; Copyright (C) 2023 Connor Redfern
 ;;
@@ -17,13 +17,12 @@
 
 (in-package :glide)
 
-(defparameter +explorer-theme+
-  (make-instance 'color-theme
-                 :fg-primary "#a8a7ab"
-                 :bg-primary "#212025"
 
-                 :fg-muted "#929096"
-                 :bg-muted "#393740"
+(defclass settings-view (view)
+  ()
+  (:documentation "A dashboard or start-screen"))
 
-                 :fg-secondary "#83accc"
-                 :bg-secondary "#1e2b40"))
+
+(defmethod initialize-instance :after ((view settings-view) &key model)
+  ;; 
+  )

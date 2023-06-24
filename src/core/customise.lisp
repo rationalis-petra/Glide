@@ -19,8 +19,27 @@
 
 ;; This file defines several globals which are used as (default) customization
 ;; options, e.g. themes, default window layout, etc.
-;;
+
+(defparameter +settings-directory+ nil)
 
 (defvar *make-default-layout*
   (lambda (parent)
-    (make-single-layout parent (make-instance 'dashboard-view))))
+    (make-instance 'single-layout
+                   :close-fn (lambda () ()) 
+                   :child (make-instance 'dashboard-view))))
+
+(defvar *make-default-view*
+  (lambda () (make-instance 'dashboard-view)))
+
+(defclass style-settings ()
+  ((theme
+    :type theme)))
+
+(defclass settings ()
+  ((default-layout)
+   (style-settings
+    :type style-settings)))
+
+(defvar settings (make-instance 'settings))
+
+;(defmacro defsettings)

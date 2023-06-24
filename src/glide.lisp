@@ -20,6 +20,8 @@
 
 (defun initialize (app)
   ;; Make sure state is reset 
+  (setf +settings-directory+ 
+    (parse-namestring (merge-pathnames ".glide" (uiop:getenv "HOME"))))
   (setf *commands* (make-hash-table :test #'equal))
   (set-app-theme +explorer-theme+) 
 
