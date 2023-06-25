@@ -1,3 +1,3 @@
 # About
 
-An experimental code editor for the Glyph language. 
+An experimental code editor for the equally experimental Glyph language. 

@@ -87,17 +87,20 @@
        (inner-widget parent)
        (gtk-widget (child parent))))
     (gtk4:box-append (inner-widget parent) (gtk-widget child))
-    (setf (slot-value parent 'child) child)))
+    (setf (slot-value parent 'child) child)
+    (setf (parent child) parent)))
 
-(defgeneric (setf start-child) (widget layout)
-  (:method (widget (layout paned-layout))
-    (setf (gtk4:paned-start-child (inner-widget layout)) (gtk-widget widget))
-    (setf (slot-value layout 'start-child) widget)))
+(defgeneric (setf start-child) (child layout)
+  (:method (child (layout paned-layout))
+    (setf (gtk4:paned-start-child (inner-widget layout)) (gtk-widget child))
+    (setf (slot-value layout 'start-child) child)
+    (setf (parent child) layout)))
 
-(defgeneric (setf end-child) (widget layout)
-  (:method (widget (layout paned-layout))
-    (setf (gtk4:paned-end-child (inner-widget layout)) (gtk-widget widget))
-    (setf (slot-value layout 'end-child) widget)))
+(defgeneric (setf end-child) (child layout)
+  (:method (child (layout paned-layout))
+    (setf (gtk4:paned-end-child (inner-widget layout)) (gtk-widget child))
+    (setf (slot-value layout 'end-child) child)
+    (setf (parent child) layout)))
 
 (defmethod (setf inner-widget) (widget (layout layout))
   (when (slot-boundp layout 'inner-widget)
@@ -205,9 +208,7 @@
 
 (defgeneric wrap-child-for (layout child))
 (defmethod wrap-child-for (layout (child view))
-  (let ((frame (make-instance 'frame :view child)))
-    ;; TOOD: set close-fn
-    frame))
+  (let ((frame (make-instance 'frame :view child))) frame))
 (defmethod wrap-child-for (layout (child frame)) child)
 (defmethod wrap-child-for (layout (child layout)) child)
 

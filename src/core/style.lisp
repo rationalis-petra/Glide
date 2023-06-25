@@ -50,25 +50,31 @@
                                 &key
                                   bg-primary
                                   bg-secondary
-                                  fg-primary
+                                   fg-primary
                                   fg-secondary
                                   fg-muted
-                                  bg-muted)
+                                  bg-muted
+                                  fg-warning
+                                  fg-error)
   (with-slots ((bp bg-primary) (bs bg-secondary)
                (fp fg-primary) (fs fg-secondary)
-               (fm fg-muted)   (bm bg-muted)) theme
+               (fm fg-muted)   (bm bg-muted)
+               (fw fg-warning)  (fe fg-error)) theme
     (setf bp bg-primary
           bs bg-secondary
           fp fg-primary
           fs fg-secondary
           fm fg-muted
-          bm bg-muted)))
+          bm bg-muted
+          fw fg-warning
+          fe fg-error)))
 
 (defmethod get-style-provider ((theme color-theme))
   (let ((style-text
           (with-slots (fg-primary   bg-primary
                        fg-secondary bg-secondary
-                       fg-muted     bg-muted) theme
+                       fg-muted     bg-muted
+                       fg-warning   fg-error) theme
             (apply
              #'lass:compile-and-write
              `(((:or window popover
@@ -123,12 +129,16 @@
                 :border-width 2px 0px
                 :border-color ,bg-secondary)
                (.minibuffer
-                :font-size 14
+                :font-size 12pt
                 :padding 4px 0px)
                (.stylish-text
                 :font-family "Anurati")
                (.title-text
-                :font-size 30pt)))))
+                :font-size 30pt)
+               (.warning-text
+                :color ,fg-warning)
+               (.error-text
+                :color ,fg-error)))))
         (provider (gtk4:make-css-provider)))
     (gtk4:css-provider-load-from-data
        provider

@@ -26,4 +26,7 @@
                  :bg-muted "#393740"
 
                  :fg-secondary "#83accc"
-                 :bg-secondary "#1e2b40"))
+                 :bg-secondary "#1e2b40"
+
+                 :fg-warning "#FFFF00"
+                 :fg-error "#FF0000"))

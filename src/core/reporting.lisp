@@ -38,8 +38,6 @@
     :initform (make-array 10 :fill-pointer 0)
     :type (array string))))
 
-(defgeneric notify (observer message))
-
 (defun observe (observer mailbox)
   (bt:with-lock-held ((lock mailbox))
     (vector-push-extend observer (observers mailbox))))
@@ -47,7 +45,7 @@
 (defun send-message (message mailbox)
   (bt:with-lock-held ((lock mailbox))
     (vector-push-extend message (messages mailbox))
-    (map 'vector (lambda (observer) (notify observer message)) (observers *info-mailbox*))))
+    (map 'vector (lambda (observer) (funcall observer message)) (observers mailbox))))
 
 (defvar *info-mailbox*    (make-instance 'mailbox))
 (defvar *error-mailbox*   (make-instance 'mailbox))
@@ -59,8 +57,8 @@
 
 (declaim (ftype (function (string) t) message-warning))
 (defun message-warning (message)
-  (send-message message *error-mailbox*))
+  (send-message message *warning-mailbox*))
 
 (declaim (ftype (function (string) t) message-error))
 (defun message-error (message)
-  (send-message message *warning-mailbox*))
+  (send-message message *error-mailbox*))
