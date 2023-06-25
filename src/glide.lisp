@@ -23,7 +23,7 @@
   (setf +settings-directory+ 
     (parse-namestring (merge-pathnames ".glide" (uiop:getenv "HOME"))))
   (setf *commands* (make-hash-table :test #'equal))
-  (set-app-theme +explorer-theme+) 
+  (set-app-theme *default-theme*)
 
   ;; initialize plugins
   (mapcar #'initialize-plugin *plugins*)

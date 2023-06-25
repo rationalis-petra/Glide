@@ -23,9 +23,8 @@
 
 (in-package :glide)
 
+(defvar *current-theme* nil)
 (defvar *current-theme-style-provider* nil)
-
-(defvar *default-theme* nil)
 
 (defclass theme ()
   ((style-provider
@@ -129,7 +128,7 @@
                (.stylish-text
                 :font-family "Anurati")
                (.title-text
-                :font-size 30px)))))
+                :font-size 30pt)))))
         (provider (gtk4:make-css-provider)))
     (gtk4:css-provider-load-from-data
        provider

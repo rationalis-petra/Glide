@@ -36,24 +36,23 @@
 
 (defclass single-layout (layout)
   ((child
-    :reader :child
-    :accessor child)))
+    :reader child)))
 
 (defclass paned-layout (layout)
   ((start-child
-    :accessor start-child
+    :reader start-child
     :initarg :start-child)
    (end-child
-    :accessor end-child
+    :reader end-child
     :initarg :end-child)
    (orientation
-    :accessor orientation
+    :reader orientation
     :initarg :orientation)))
 
 (defclass tabbed-layout (layout)
   ((children
     :accessor children
-    :initarg children)))
+    :initarg :children)))
 
 ;; Frame - 
 
@@ -81,19 +80,36 @@
     :accessor gtk-widget)))
 
 
-(defgeneric (setf child) (child parent))
-(defmethod (setf child) (child (parent layout))
-  ;; todo set gtk-child also
-  (setf (slot-value parent 'child) child))
+(defgeneric (setf child) (child parent)
+  (:method (child (parent single-layout))
+    (when (slot-boundp parent 'child)
+      (gtk4:box-remove
+       (inner-widget parent)
+       (gtk-widget (child parent))))
+    (gtk4:box-append (inner-widget parent) (gtk-widget child))
+    (setf (slot-value parent 'child) child)))
+
+(defgeneric (setf start-child) (widget layout)
+  (:method (widget (layout paned-layout))
+    (setf (gtk4:paned-start-child (inner-widget layout)) (gtk-widget widget))
+    (setf (slot-value layout 'start-child) widget)))
+
+(defgeneric (setf end-child) (widget layout)
+  (:method (widget (layout paned-layout))
+    (setf (gtk4:paned-end-child (inner-widget layout)) (gtk-widget widget))
+    (setf (slot-value layout 'end-child) widget)))
+
+(defmethod (setf inner-widget) (widget (layout layout))
+  (when (slot-boundp layout 'inner-widget)
+    (gtk4:box-remove (gtk-widget layout) (inner-widget layout)))
+  (setf (slot-value layout 'inner-widget) widget)
+  (gtk4:box-append (gtk-widget layout) (inner-widget layout)))
 
 (defmethod initialize-instance :after
     ((layout single-layout) &key child)
   (let* ((gtk-widget (gtk4:make-box :spacing 0 :orientation gtk4:+orientation-vertical+))
          (inner-widget (gtk4:make-box :spacing 0 :orientation gtk4:+orientation-vertical+))
          (wrapped-child (wrap-child-for layout child)))
-
-    (gtk4:box-append gtk-widget inner-widget)
-    (gtk4:box-append inner-widget (gtk-widget wrapped-child))
 
     (setf (gtk-widget layout) gtk-widget)
     (setf (inner-widget layout) inner-widget)
@@ -103,7 +119,8 @@
 
 (defmethod initialize-instance :after
     ((layout paned-layout) &key orientation start-child end-child)
-  (let* ((gtk-widget (gtk4:make-box :spacing 0 :orientation gtk4:+orientation-vertical+))
+  (let* ((gtk-widget
+           (gtk4:make-box :spacing 0 :orientation gtk4:+orientation-vertical+))
          (paned (gtk4:make-paned
                  :orientation (if (eq orientation :vertical)
                                   gtk4:+orientation-vertical+
@@ -111,10 +128,7 @@
          (wrapped-start-child (wrap-child-for layout start-child))
          (wrapped-end-child (wrap-child-for layout end-child)))
 
-    (gtk4:box-append gtk-widget paned)
-    (setf (gtk4:paned-start-child paned) (gtk-widget wrapped-start-child))
-    (setf (gtk4:paned-end-child paned) (gtk-widget wrapped-end-child))
-
+    (setf (slot-value layout 'orientation) orientation)
     (setf (gtk-widget layout) gtk-widget)
     (setf (inner-widget layout) paned)
     (setf (start-child layout) wrapped-start-child)
@@ -140,6 +154,54 @@
 
     (setf (children layout) wrapped-children)
     layout))
+
+(defgeneric swap-layout-to (layout class &key &allow-other-keys)
+  (:documentation "Sets Internal class to provided class-designator"))
+  
+(defmethod swap-layout-to :before ((layout layout) class &key &allow-other-keys)
+  (gtk4:box-remove (gtk-widget layout) (inner-widget layout)))
+
+(defmethod swap-layout-to :before ((layout single-layout) class &key &allow-other-keys)
+  (gtk4:box-remove (inner-widget layout) (gtk-widget (child layout))))
+
+(defmethod swap-layout-to :before ((layout paned-layout) class &key &allow-other-keys)
+  (setf (gtk4:paned-start-child (inner-widget layout)) nil)
+  (setf (gtk4:paned-start-child (inner-widget layout)) nil))
+
+(defmethod swap-layout-to :before ((layout tabbed-layout) class &key &allow-other-keys)
+  (iter (for child in (children layout))
+    (gtk4:notebook-remove-page
+     (inner-widget layout)
+     (gtk4:notebook-get-page (inner-widget layout)))))
+
+
+(defmethod swap-layout-to ((layout layout) (class (eql 'single-layout))
+                           &key child)
+  (change-class layout 'single-layout)
+  (let ((inner-widget (gtk4:make-paned :spacing 0 :orientation gtk4:+orientation-vertical+))
+        (wrapped-child (wrap-child-for layout child)))
+    (setf (inner-widget layout) inner-widget)
+    (setf (child layout) wrapped-child)))
+
+(defmethod swap-layout-to ((layout layout) (class (eql 'paned-layout))
+                           &key orientation start-child end-child)
+  (change-class layout 'paned-layout)
+  (let ((inner-widget
+          (gtk4:make-paned :orientation
+                           (if (eq orientation :vertical)
+                               gtk4:+orientation-vertical+
+                               gtk4:+orientation-horizontal+)))
+        (wrapped-start-child (wrap-child-for layout start-child))
+        (wrapped-end-child (wrap-child-for layout end-child)))
+
+    (setf (slot-value layout 'orientation) orientation)
+    (setf (inner-widget layout) inner-widget)
+    (setf (start-child layout) wrapped-start-child)
+    (setf (end-child layout) wrapped-end-child)))
+
+(defmethod swap-layout-to ((layout layout) (class (eql 'tabbed-layout))
+                           &key children)
+  (message-error "Swap child to tabbed layout not implemented"))
 
 (defgeneric wrap-child-for (layout child))
 (defmethod wrap-child-for (layout (child view))
@@ -274,27 +336,30 @@
       (:none
        (if (transient-p old-child)
            (let ((wrapped-new-child (wrap-child-for layout child)))
-             (gtk4:box-remove inner-widget (gtk-widget old-child))
-             (setf (child layout) wrapped-new-child)
-             (gtk4:box-append inner-widget (gtk-widget wrapped-new-child)))
-           (let ((paned (gtk4:make-paned
-                         :orientation gtk4:+orientation-horizontal+))
-                 (wrapped-old-child (wrap-child-for layout old-child))
-                 (wrapped-new-child (wrap-child-for layout child)))
+             (setf (child layout) wrapped-new-child))
+           (swap-layout-to layout 'paned-layout
+                           :start-child old-child
+                           :end-child child
+                           :orientation :horizontal)
+           ;; (let ((paned (gtk4:make-paned
+           ;;               :orientation gtk4:+orientation-horizontal+))
+           ;;       (wrapped-old-child (wrap-child-for layout old-child))
+           ;;       (wrapped-new-child (wrap-child-for layout child)))
 
-             (gtk4:box-remove inner-widget (gtk-widget wrapped-old-child))
-             (setf (gtk4:paned-start-child paned) (gtk-widget wrapped-old-child))
-             (setf (gtk4:paned-end-child paned) (gtk-widget wrapped-new-child))
+           ;;   (gtk4:box-remove inner-widget (gtk-widget wrapped-old-child))
+           ;;   (setf (gtk4:paned-start-child paned) (gtk-widget wrapped-old-child))
+           ;;   (setf (gtk4:paned-end-child paned) (gtk-widget wrapped-new-child))
 
-             (gtk4:box-remove gtk-widget inner-widget)
-             (gtk4:box-append gtk-widget paned)
+           ;;   (gtk4:box-remove gtk-widget inner-widget)
+           ;;   (gtk4:box-append gtk-widget paned)
 
-             (setf inner-widget paned)
+           ;;   (setf inner-widget paned)
 
-             (change-class layout 'paned-layout)
-             (setf (start-child layout) wrapped-old-child)
-             (setf (end-child layout) wrapped-new-child)
-             (setf (orientation layout) :horizontal))))
+           ;;   (change-class layout 'paned-layout)
+           ;;   (setf (start-child layout) wrapped-old-child)
+           ;;   (setf (end-child layout) wrapped-new-child)
+           ;;   (setf (orientation layout) :horizontal))
+           ))
 
       ((or :outside :centre)
        ;; convert to tabbed layout

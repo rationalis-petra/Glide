@@ -22,13 +22,9 @@
 
 (defparameter +settings-directory+ nil)
 
-(defvar *make-default-layout*
-  (lambda (parent)
-    (make-instance 'single-layout
-                   :child (make-instance 'dashboard-view))))
-
-(defvar *make-default-view*
-  (lambda () (make-instance 'dashboard-view)))
+(defvar *default-theme* nil)
+(defvar *make-default-layout* nil)
+(defvar *make-default-view* nil)
 
 (defclass style-settings ()
   ((theme

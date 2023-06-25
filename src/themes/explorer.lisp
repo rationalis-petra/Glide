@@ -19,7 +19,7 @@
 
 (defparameter +explorer-theme+
   (make-instance 'color-theme
-                 :fg-primary "#a8a7ab"
+                 :fg-primary "#a8a7ab" ;;#c5c6c9
                  :bg-primary "#212025"
 
                  :fg-muted "#929096"

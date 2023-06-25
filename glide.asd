@@ -32,7 +32,10 @@
                :lass)
   :pathname "src"
   :components (;; glide itself
-               (:file "glide" :depends-on ("core" "views"))
+               (:file "glide" :depends-on ("defaults"))
+
+               (:file "defaults"
+                :depends-on ("core" "views" "models" "themes"))
 
                ;; core components
                (:file "package")

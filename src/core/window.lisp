@@ -228,7 +228,8 @@
                         (run-command window text))))
 
       (gtk4:overlay-add-overlay overlay palette)
-      (setf (gtk4:widget-vexpand-p palette) nil)
+      (setf (gtk4:widget-valign palette) gtk4:+align-start+)
+      ;(setf (gtk4:widget-vexpand-p palette) nil)
       (setf (gtk4:widget-visible-p palette) nil)
       (setf (slot-value window 'palette) palette))))
 
