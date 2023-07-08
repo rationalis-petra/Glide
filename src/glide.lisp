@@ -1,5 +1,7 @@
 ;;;; glide.lisp
 
+;(uiop:symbol-call :gir :require-namespace "WebKit2" "4.1")
+
 ;; Copyright (C) 2023 Connor Redfern
 ;;
 ;; This program is free software: you can redistribute it and/or modify
@@ -17,11 +19,18 @@
 
 (in-package #:glide)
 
-
 (defun initialize (app)
   ;; Make sure state is reset 
   (setf +settings-directory+ 
-    (parse-namestring (merge-pathnames ".glide" (uiop:getenv "HOME"))))
+        (cond 
+          ((equal "Win32" (software-type))
+           (merge-pathnames #p"AppData/Roaming/glide/" (user-homedir-pathname)))
+          ((equal "Linux" (software-type))
+           (merge-pathnames #p".config/glide/" (user-homedir-pathname)))
+          (t
+           (print "unable to locate config direcotry for your os!")
+           (exit))))
+  (load-settings +settings-directory+)
   (setf *commands* (make-hash-table :test #'equal))
   (set-app-theme *default-theme*)
 
@@ -40,8 +49,8 @@
                (let ((window (make-instance 'window
                               :app app
                               :title "Glide")))
-                 (unless (gtk4:widget-visible-p (gtk-window window))
-                   (gtk4:window-present (gtk-window window))))))
+                 (unless (gtk4:widget-visible-p (gtk-widget window))
+                   (gtk4:window-present (gtk-widget window))))))
 
     (unwind-protect
          (gio:application-run app nil)

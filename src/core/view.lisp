@@ -22,10 +22,19 @@
     :accessor view-model
     :initarg :model
     :documentation "The data that this view looks at")
+   (modes
+    :accessor modes
+    :initarg :modes
+    :initform nil
+    :documentation "The set of enabled modes")
    (modeline-widgets
     :reader modeline-widgets
     :initform nil
     :documentation "Widgets to put on the modeline")
+   (keymaps
+    :accessor keymaps
+    :initform nil
+    :documentation "The set of keymaps associated with this view")
    (gtk-widget
     :accessor gtk-widget
     :documentation "The gtk4 widget that this view")
@@ -35,7 +44,12 @@
     :documentation "When true, this view will be replaced when the window
   attempts to add a new view at this location. When false, this view is
   persistent, and attempting to add a new view at the location of the current
-  view will cause it to split.")))
+  view will cause it to split."))
+  (:documentation "A view defines a particular way of looking at data"))
+
+(defclass mode ()
+  ()
+  (:documentation "A mode augments a view somehow: "))
 
 
 ;; class-level generics
@@ -49,7 +63,6 @@
   instances of this class are present on a window.") 
   (:method (view-class) nil))
 
-
 ;; instance-level generics
 (defgeneric name (view)
   (:documentation "Return the name of the object in question")
@@ -60,9 +73,13 @@
   (:method (view)
     (error (format nil "View ~A should implement model-updated." view))))
 
-
 (defgeneric view-commands (view)
   (:documentation "Return a set of command palette commands which the view
   provides. These will only be available when the specific view instance is
   in focus.")
   (:method (view) nil))
+
+(defgeneric add-keymap (view keymap)
+  (:documentation "Associate a keymap with a particular view. Keymaps added
+  later will have higher priority")
+  (:method ((view view) keymap) (pushnew keymap (keymaps view))))

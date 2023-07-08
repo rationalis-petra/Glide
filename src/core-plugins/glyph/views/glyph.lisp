@@ -17,9 +17,13 @@
 
 (in-package :glyph)
 
+(defkeymap *glyph-view-map*)
+
 (defclass glyph-view (text-view) ())
 
 (defmethod initialize-instance :after ((view glyph-view) &key model)
+  (add-keymap view *glyph-view-map*)
+
   (let ((eval-btn (gtk4:make-button :label "Eval"))
         (load-btn (gtk4:make-button :label "Load")))
     (gtk4:connect eval-btn "clicked"
@@ -40,3 +44,5 @@
     (with-slots (modeline-widgets) view
       (push load-btn modeline-widgets)
       (push eval-btn modeline-widgets))))
+
+

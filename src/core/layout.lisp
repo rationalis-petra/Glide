@@ -161,15 +161,12 @@
 (defgeneric swap-layout-to (layout class &key &allow-other-keys)
   (:documentation "Sets Internal class to provided class-designator"))
   
-(defmethod swap-layout-to :before ((layout layout) class &key &allow-other-keys)
-  (gtk4:box-remove (gtk-widget layout) (inner-widget layout)))
-
 (defmethod swap-layout-to :before ((layout single-layout) class &key &allow-other-keys)
   (gtk4:box-remove (inner-widget layout) (gtk-widget (child layout))))
 
 (defmethod swap-layout-to :before ((layout paned-layout) class &key &allow-other-keys)
   (setf (gtk4:paned-start-child (inner-widget layout)) nil)
-  (setf (gtk4:paned-start-child (inner-widget layout)) nil))
+  (setf (gtk4:paned-end-child (inner-widget layout)) nil))
 
 (defmethod swap-layout-to :before ((layout tabbed-layout) class &key &allow-other-keys)
   (iter (for child in (children layout))
@@ -181,7 +178,7 @@
 (defmethod swap-layout-to ((layout layout) (class (eql 'single-layout))
                            &key child)
   (change-class layout 'single-layout)
-  (let ((inner-widget (gtk4:make-paned :spacing 0 :orientation gtk4:+orientation-vertical+))
+  (let ((inner-widget (gtk4:make-box :spacing 0 :orientation gtk4:+orientation-vertical+))
         (wrapped-child (wrap-child-for layout child)))
     (setf (inner-widget layout) inner-widget)
     (setf (child layout) wrapped-child)))
@@ -230,40 +227,23 @@
 
 (defmethod transient-p ((layout layout)) nil)
 (defmethod transient-p ((frame frame)) (transient-p (view frame)))
-;; hierarchy of layout hints:
-;; + tab
-;; + left
-;; + right
-;; + top
-;; + bottom
-;; + centre
 
-;; (declaim (ftype (function
-;;                  (layout view &key
-;;                          (layout-preference keyword))
-;;                  layout)
-;;                 layout-add-child))
-;; (defun layout-add-child (layout child &key (layout-preference :none))
-;;   "Will add CHILD to LAYOUT. The location and manner in which the CHILD is added
-;;                  is dependent both on where the focus is and the value of
-;;                  LAYOUT-PREFERENCE. The LAYOUT will traverse downwards into the
-;;                  child that has focus until it finds either a single-layout or a
-;;                  frame. When this is the case, it will insert the child 'next
-;;                  to' the focus frame in a manner dependent on
-;;                  LAYOUT-PREFERENCE.
 
-;; LAYOUT-PREFERENCE can be one of :BELOW :ABOVE :LEFT :RIGHT or :TAB"
-;;   (let ((frame (make-instance 'frame :view child))
-;;         (focus-child (focus-child layout)))
-;;     (with-slots (inner-widget layout-type children) layout
-;;       (setf (close-fn frame) (lambda () (layout-remove-child layout frame)))
+(defgeneric close-child (parent child)
+  (:documentation "A child is requesting to be closed, remove the child if
+  possible and turn into the appropriate layout."))
 
-;;       (typecase focus-child
-;;         (layout (layout-add-child focus-child child :layout-preference layout-preference))
-;;         (frame ()))
-;;       ;; TODO: branching logic based on layout-type!
-;;       ;; (when is single) 
-;;       layout)))
+(defmethod close-child ((parent single-layout) child)
+  (close-child (parent parent) parent))
+
+(defmethod close-child ((parent paned-layout) child)
+  (cond
+    ((eq child (start-child parent))
+     (swap-layout-to parent 'single-layout :child (end-child parent)))
+    ((eq child (end-child parent))
+     (swap-layout-to parent 'single-layout :child (start-child parent)))
+    (t (message-error "attempting to remove child from parent widget, but that
+  widget does not contain child"))))
 
 
 (declaim (ftype (function
@@ -302,38 +282,16 @@
   (with-slots (gtk-widget inner-widget (old-child child)) layout
     (match layout-location
       ((or :bottom :top :left :right)
-       (let ((paned (gtk4:make-paned
-                    :orientation (if (or (eq layout-location :left) (eq layout-location :right))
-                                     gtk4:+orientation-horizontal+
-                                     gtk4:+orientation-vertical+)))
-             (wrapped-old-child (wrap-child-for layout old-child))
-             (wrapped-new-child (wrap-child-for layout child)))
-             
-
-         (setf (gtk4:paned-start-child paned)
-               (gtk-widget
-                (if (or (eq layout-location :top) (eq layout-location :left))
-                    wrapped-new-child wrapped-old-child)))
-         (setf (gtk4:paned-end-child paned)
-               (gtk-widget
-                (if (or (eq layout-location :top) (eq layout-location :right))
-                    wrapped-old-child wrapped-new-child)))
-
-         (gtk4:box-remove gtk-widget inner-widget)
-         (gtk4:box-remove inner-widget (gtk-widget wrapped-old-child))
-         (gtk4:box-append gtk-widget paned)
-
-         (setf inner-widget paned)
-
-         (change-class layout 'paned-layout)
-         (setf (start-child layout)
-               (if (or (eq layout-location :top) (eq layout-location :right))
-                    wrapped-new-child wrapped-old-child))
-         (setf (end-child layout)
-               (if (or (eq layout-location :top) (eq layout-location :right))
-                   wrapped-old-child wrapped-new-child))
-         (setf (orientation layout) :horizontal)))
-      
+       (swap-layout-to layout 'paned-layout
+                       :start-child (if (or (eq :left layout-location) (eq :top layout-location))
+                                        old-child
+                                        child)
+                       :end-child (if (or (eq :left layout-location) (eq :top layout-location))
+                                        child
+                                        old-child)
+                       :orientation (if (or (eq :left layout-location) (eq :right layout-location))
+                                        :horizontal
+                                        :vertical)))
       (:none
        (if (transient-p old-child)
            (let ((wrapped-new-child (wrap-child-for layout child)))
@@ -341,30 +299,11 @@
            (swap-layout-to layout 'paned-layout
                            :start-child old-child
                            :end-child child
-                           :orientation :horizontal)
-           ;; (let ((paned (gtk4:make-paned
-           ;;               :orientation gtk4:+orientation-horizontal+))
-           ;;       (wrapped-old-child (wrap-child-for layout old-child))
-           ;;       (wrapped-new-child (wrap-child-for layout child)))
-
-           ;;   (gtk4:box-remove inner-widget (gtk-widget wrapped-old-child))
-           ;;   (setf (gtk4:paned-start-child paned) (gtk-widget wrapped-old-child))
-           ;;   (setf (gtk4:paned-end-child paned) (gtk-widget wrapped-new-child))
-
-           ;;   (gtk4:box-remove gtk-widget inner-widget)
-           ;;   (gtk4:box-append gtk-widget paned)
-
-           ;;   (setf inner-widget paned)
-
-           ;;   (change-class layout 'paned-layout)
-           ;;   (setf (start-child layout) wrapped-old-child)
-           ;;   (setf (end-child layout) wrapped-new-child)
-           ;;   (setf (orientation layout) :horizontal))
-           ))
+                           :orientation :horizontal)))
 
       ((or :outside :centre)
        ;; convert to tabbed layout
-       (error "layout-add-child-absolute ((single layout) :outside) not yet implemented")))
+       (message-error "layout-add-child-absolute ((single layout) :outside) not yet implemented")))
     layout))
 
 (defmethod layout-add-child-absolute ((layout paned-layout) child &key (layout-location :none)) 
@@ -373,7 +312,7 @@
       ((cons :horizontal (or :bottom :top))
        (cond
          ((member :bottom (location-hints (start-child layout)))
-          (error "TODO"))
+          (message-error "Cannot yet call layout-add-child-absolute"))
          ((member :bottom (location-hints (end-child layout)))
           (error "TODO"))
          ((and (member :left (location-hints (start-child layout)))
@@ -389,6 +328,7 @@
             (let* ((pane (gtk4:make-paned :orientation
                                           gtk4:+orientation-vertical+))
                    (new-layout (make-instance 'paned-layout
+                                              :parent layout
                                               :orientation orientation
                                               :start-child start-child
                                               :end-child end-child))
@@ -409,9 +349,6 @@
 
       (t (error "TODO-match")))
     layout))
-
-(defun remove-child (parent child)
-  (message-info "removing child"))
 
 
 (defmethod initialize-instance :after ((frame frame) &key view)
@@ -458,6 +395,6 @@
     (gtk4:connect close-btn "clicked"
                   (lambda (button)
                     (declare (ignore button))
-                    (funcall (remove-child (parent frame) frame))))
+                    (close-child (parent frame) frame)))
     (gtk4:box-append (gtk-widget modeline) close-btn)))
 

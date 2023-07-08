@@ -19,24 +19,45 @@
 (in-package :glide)
 
 (defclass model ()
-  ()
+  ((file
+    :accessor :file
+    :initform nil
+    :documentation ""))
   (:documentation
    "A model subclass represents a data model"))
 
 
+;; File formats can be used in two different ways:
+;; • We have a model (with no corresponding file) and want to save it to a file
+;; • We have a file (with particular format) and want to load a model from it
 (defclass file-format ()
   ((extensions
-    :accessor file-format-extensions)
+    :accessor extensions
+    :initarg :extensions)
    (loader
-    :accessor file-format-loader)
+    :accessor loader)
    (saver
-    :accessor file-format-saver)))
+    :accessor saver))
+  (:documentation "A file format represents (as the name implies) a particular
+  file format."))
+
+(defclass file ()
+  ((file-format
+    :reader file-format
+    :initarg :format
+    :type file-format)
+   (path
+    :reader path
+    :initarg :path
+    :type pathname)))
 
 ;; class generics
 (defgeneric model-file-formats (model-class)
   (:method (model-class))
   (:documentation "File formats supported by a model"))
 
+
+(defvar *file-formats* nil)
 ;; instance generics
 
 ;; (defgeneric model-file-formats (model-class) ())

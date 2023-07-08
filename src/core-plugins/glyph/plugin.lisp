@@ -47,11 +47,19 @@
        :location-preference :window-bottom)
       (message-error "No server available")))
 
-(defparameter +glyph-plugin+
+;; (defconstant +glyph-format+
+;;   (make-instance 'glide:file-format
+;;                  :extensions "*.gl"
+;;                  ;:loader #'load-glyph-file
+;;                  ;; :saver #'glide:save-text-file
+;;                  ))
+
+(defvar +glyph-plugin+
   (make-instance
    'plugin
    :name "Glyph"
    :about "A plugin for the Glyph Language"
+   ;; commands should have a 'when' clause also!
    :commands (hash-table-from-list
               (list
                (list "glyph:connections" #'list-connections)
@@ -59,13 +67,16 @@
                (list "glyph:playground" #'new-playground)))
 
    :views (list 'glyph-view)
+   ;; :modes
 
    :menu-bar-submenus (list
-                       (list "Views"
+                       (list "Views" ;; TODO: when!!
                              (cons "Connections" #'list-connections)
                              (cons "Server" #'show-server)
                              (cons "Playground" #'new-playground)))
-   :models ()))
+   :models (list 'glyph-connection)
+   ;:file-formats (list +glyph-format+)
+   ))
 
 ;; (defvar make-glyph-playground-layout ()
 ;;   (make-vertical-layout 

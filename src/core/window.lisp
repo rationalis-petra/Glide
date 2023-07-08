@@ -36,18 +36,15 @@
     (gtk4:widget-add-css-class gtk-widget "minibuffer")
 
     (flet ((show-info-message (message)
-             (print "showing info message!")
              (setf (text-model-string (text-model minibuffer)) message)
              (gtk4:widget-remove-css-class (gtk-widget minibuffer) "warning-text")
              (gtk4:widget-remove-css-class (gtk-widget minibuffer) "error-text"))
            (show-warning-message (message)
-             (print "showing warning!")
              (setf (text-model-string (text-model minibuffer)) message)
              (gtk4:widget-remove-css-class (gtk-widget minibuffer) "error-text")
              (gtk4:widget-add-css-class (gtk-widget minibuffer) "warning"))
            (show-error-message (message)
              (setf (text-model-string (text-model minibuffer)) message)
-             (print "showing error message!")
              (gtk4:widget-remove-css-class (gtk-widget minibuffer) "warning-text")
              (gtk4:widget-add-css-class (gtk-widget minibuffer) "error-text")))
 
@@ -59,8 +56,8 @@
   ((focus-view
     :accessor window-focus-view
     :documentation "The current view that is")
-   (gtk-window
-    :reader gtk-window
+   (gtk-widget
+    :reader gtk-widget
     :documentation "The underlying gtk window")
    (palette
     :reader palette)
@@ -86,7 +83,9 @@
 
 (defun run-command (window text)
   (let ((result (gethash text *commands*)))
-    (when result (funcall result window))))
+    (if result
+        (funcall result window)
+        (message-error (format nil "Couldn't find command: ~A" text)))))
 
 
 (defun open-command-palette (window)
@@ -94,35 +93,11 @@
   (gtk4:widget-grab-focus (palette window)))
 
 
-(defvar +default-menu-desc+
-  (list
-   (list "Views"
-         (cons "File Open" (lambda (window) (message-info "file opened!")))
-         (cons "File Save" (lambda (window) (message-info "file saved!")))
-         (cons "File New" (lambda (window) (message-info "file new!"))))
-   (list "Settings"
-         (cons "Application" (lambda (window) (message-info "application settings")))
-         (cons "Window" (lambda (window) (message-info "window settings")))
-         (cons "View" (lambda (window) (message-info "view settings"))))
-   (list "Actions"
-         (cons "Command"
-               (lambda (window)
-                 (open-command-palette window))))
-   (list "Help"
-         (cons "About"
-               (lambda (window)
-                 (message-info "About")))
-         (cons "Tutorial"
-               (lambda (window)
-                 (message-info "Tutorial")))
-         (cons "Where is...?"
-               (lambda (window)
-                 (message-info "Where is...?"))))))
 
 
 (defun make-initial-menu-desc ()
   (reduce #'merge-menu-descs
-          (append (list +default-menu-desc+) (get-menu-descs))))
+          (append (list *default-menu-desc*) (get-menu-descs))))
 
 
 ;; Eagerly use menu-2's item
@@ -197,7 +172,7 @@
                 :name "command_palette"
                 :parameter-type nil)))
     (setf (slot-value window 'layout-parent) overlay)
-    (setf (slot-value window 'gtk-window) gtk-window)
+    (setf (slot-value window 'gtk-widget) gtk-window)
 
     ;; register action group + controller with window.
     (gtk4:widget-insert-action-group gtk-window "window" (action-group window))
@@ -232,7 +207,6 @@
 
     ;; Window command palette
     (let ((palette (gtk4:make-entry)))
-      (setf (gtk4:widget-halign palette) gtk4:+align-center+)
       (gtk4:connect palette "activate"
                     (lambda (widget)
                       (let ((text (gtk4:entry-buffer-text (gtk4:entry-buffer widget))))
@@ -242,8 +216,9 @@
 
       (gtk4:overlay-add-overlay overlay palette)
       (setf (gtk4:widget-valign palette) gtk4:+align-start+)
-      ;(setf (gtk4:widget-vexpand-p palette) nil)
+      (setf (gtk4:widget-halign palette) gtk4:+align-center+)
       (setf (gtk4:widget-visible-p palette) nil)
+      (setf (gtk4:editable-max-width-chars palette) 80)
       (setf (slot-value window 'palette) palette))))
 
 (defmethod (setf layout) (new-layout (window window))
@@ -269,5 +244,5 @@
     (:none
      (layout-add-child-absolute (layout window) view))
     (otherwise
-     (format t "err: preferred location ~A not recognized~%" preferred-location))))
+     (message-error (format nil "window-add-view: location-preference ~A not recognized~%" preferred-location)))))
 

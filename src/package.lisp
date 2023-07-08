@@ -20,9 +20,6 @@
   (:export
    ;; main function, for easy running
    :main :glide-app
-   :message-info
-   :message-warning
-   :message-error
 
    ;; customization
    :*make-default-layout*
@@ -31,14 +28,31 @@
 
    ;; window stuf
    :window
-   :window-add-view
+   :window-add-view 
+
+   ;; models & file formats
+   :model
+   :file-format
+   :model-file-formats
+
+   ;; views
+   :view
+   :view-model 
+   :gtk-widget
+   :add-keymap
+   :modeline-widgets
+
+   ;; keys
+   :keymap
+   :defkeymap
 
    ;; Plugin hook interface
    :plugin :register-plugin
-   ;; views
-   :view
-   :view-model :gtk-widget
-   :modeline-widgets
+
+   ;; misc. API
+   :message-info
+   :message-warning
+   :message-error
 
    :text-view
    :+unicode-input-mode+
@@ -47,8 +61,6 @@
    :abstract-list-view
    :make-list-item-widget
    :update-list-item-widget
-   ;; models
-   :model
 
 
    :text-model

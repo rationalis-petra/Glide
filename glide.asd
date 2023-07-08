@@ -13,11 +13,12 @@
   :entry-point "glide:main"
   :depends-on (;; system
                :asdf
-               ;; language extensions
+               ;; language extensions & utility
                :alexandria
                :trivia
                :iterate
                :trivial-utf-8
+               :esrap-liquid
                ;; portability
                :uiop
                :bordeaux-threads
@@ -29,6 +30,7 @@
                :cl-glib
                :cl-gdk4
                :cl-gtk4
+               :cl-gtk4.webkit
                :lass)
   :pathname "src"
   :components (;; glide itself
@@ -47,9 +49,11 @@
                              (:file "view")
                              (:file "model")
                              (:file "style")
+                             (:file "keymap")
                              (:file "layout")
                              (:file "reporting")
                              (:file "customise")
+                             (:file "commands")
                              (:file "window" :depends-on ("layout" "reporting" "customise"))))
 
                (:module "models"
@@ -72,7 +76,7 @@
 
                ;; The glyph (built-in) plugin
                (:module "glyph"
-                :pathname "glyph"
+                :pathname "core-plugins/glyph"
                 :depends-on ("core" "views" "models")
                 :components ((:file "plugin" :depends-on ("views" "models"))
                              (:module "views"
@@ -86,4 +90,18 @@
                               :depends-on ("package")
                               :components ((:file "code")
                                            (:file "connection")))
+                             (:file "package")))
+
+               (:module "glaze"
+                :pathname "core-plugins/glaze"
+                :depends-on ("core" "views" "models")
+                :components ((:file "plugin" :depends-on ("views" "models"))
+                             (:module "views"
+                              :pathname "views"
+                              :depends-on ("models")
+                              :components ((:file "document")))
+                             (:module "models"
+                              :pathname "models"
+                              :depends-on ("package")
+                              :components ((:file "document")))
                              (:file "package")))))

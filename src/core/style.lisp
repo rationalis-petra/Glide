@@ -119,20 +119,21 @@
                                            bg-secondary
                                            bg-secondary))
                ((:and .activatable :selected)
+                :color ,fg-secondary
                 :background-color ,bg-secondary)
                (button
                 :background-image none
                 :border-image none
+                :color ,fg-secondary
                 :background-color ,bg-secondary)
                (.modeline
                 :border-style solid
                 :border-width 2px 0px
                 :border-color ,bg-secondary)
                (.minibuffer
-                :font-size 12pt
                 :padding 4px 0px)
                (.stylish-text
-                :font-family "Anurati")
+                :font-family "Anurati") ;; 
                (.title-text
                 :font-size 30pt)
                (.warning-text

@@ -25,6 +25,7 @@
 (defvar *default-theme* nil)
 (defvar *make-default-layout* nil)
 (defvar *make-default-view* nil)
+(defvar *default-menu-desc* nil)
 
 (defclass style-settings ()
   ((theme
@@ -34,6 +35,10 @@
   ((default-layout)
    (style-settings
     :type style-settings)))
+
+(defun load-settings (settings-dir)
+  (load (merge-pathnames #p"early-init" settings-dir)
+        :if-does-not-exist nil))
 
 (defvar settings (make-instance 'settings))
 

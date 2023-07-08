@@ -17,7 +17,7 @@
 
 (in-package :glide)
 
-(defparameter +explorer-theme+
+(defparameter +explorer-dark-theme+
   (make-instance 'color-theme
                  :fg-primary "#a8a7ab" ;;#c5c6c9
                  :bg-primary "#212025"
@@ -27,6 +27,20 @@
 
                  :fg-secondary "#83accc"
                  :bg-secondary "#1e2b40"
+
+                 :fg-warning "#FFFF00"
+                 :fg-error "#FF0000"))
+
+(defparameter +explorer-light-theme+
+  (make-instance 'color-theme
+                 :fg-primary "#212025" ;;#c5c6c9
+                 :bg-primary "#a8a7ab"
+
+                 :fg-muted "#393740"
+                 :bg-muted "#929096"
+
+                 :fg-secondary "#d3d7de"
+                 :bg-secondary "#304057"
 
                  :fg-warning "#FFFF00"
                  :fg-error "#FF0000"))
