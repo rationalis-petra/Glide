@@ -15,13 +15,14 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-(in-package :glaze)
+(in-package :glint)
 
-(defclass glaze-view (view) ())
+(defclass glint-view (view) ())
 
-(defmethod initialize-instance :after ((view glaze-view) &key model)
+(defmethod initialize-instance :after ((view glint-view) &key model)
   (declare (ignore model))
   (with-slots (gtk-widget model) view
-    (setf gtk-widget (webkit:make-web-view
-                      :context (webkit:make-web-context)))
-    (webkit:web-view-load-html gtk-widget (render model))))
+    (setf gtk-widget (webkit:make-web-view))
+    (setf (gtk4:widget-vexpand-p gtk-widget) t)
+    (setf (gtk4:widget-hexpand-p gtk-widget) t)
+    (webkit:web-view-load-html gtk-widget (render model :html) nil)))

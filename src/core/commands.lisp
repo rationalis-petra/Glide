@@ -21,13 +21,26 @@
 ;; • Loading/Saving a file
 ;; • Splitting a frame/view horizontally or vertically
 ;; • Closing a frame 
-(defmacro defcommand ())
+(defmacro defcommand (name (&body alist))
+  (let ((title (cadr (assoc :title alist)))
+        (documentation (cadr (assoc :documentation alist))))
+  `(progn
+     (setf (gethash ,name *commands*)
+           (make-instance 'command
+                          :title title
+                          :documentation documentation)))))
+
+(defvar *commands* (make-hash-table))
 
 (defclass command ()
-  ((function)
-   (args)
-   (title)
-   (documentation))
+  ((function
+    :initarg :function)
+   (args
+    :initarg :args)
+   (title
+    :initarg :title)
+   (documentation
+    :initarg :documentation))
   (:documentation "A command represents a common lisp function which is exposed
   to the user via, e.g. a keybind, menu-option or button"))
 
@@ -39,11 +52,11 @@
    (lambda (file) (message-info (format nil "file was: ~A" file)))
    nil))
 
-;; (defcommand base.load-file
-;;   :function #'load-file
-;;   :title "Open File")
+;; (defcommand (base open-file)
+;;   (:function #'open-file)
+;;   (:title "Open File"))
 
-;; (defcommand base.save-file
-;;   :function #'save-file
-;;   :title "Save File"
-;;   :when (lambda (view) (can-save view)))
+;; (defcommand (base save-file)
+;;   (:function () save-file)
+;;   (:title "Save File")
+;;   (:when (lambda (view) (can-save view))))

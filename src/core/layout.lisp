@@ -377,7 +377,8 @@
          :spacing 10))
   (gtk4:widget-add-css-class (gtk-widget modeline) "modeline")
   (setf (gtk4:widget-valign (gtk-widget modeline)) gtk4:+align-end+)
-  (setf (gtk4:widget-vexpand-p (gtk-widget modeline)) t)
+  (unless (gtk4:widget-vexpand-p (gtk-widget (view frame)))
+    (setf (gtk4:widget-vexpand-p (gtk-widget modeline)) t))
 
   (let ((label (gtk4:make-label :str (name (view frame)))))
     (gtk4:box-append (gtk-widget modeline) label))

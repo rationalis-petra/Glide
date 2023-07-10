@@ -31,7 +31,9 @@
                :cl-gdk4
                :cl-gtk4
                :cl-gtk4.webkit
-               :lass)
+               ;; html
+               :lass
+               :spinneret)
   :pathname "src"
   :components (;; glide itself
                (:file "glide" :depends-on ("defaults"))
@@ -92,8 +94,8 @@
                                            (:file "connection")))
                              (:file "package")))
 
-               (:module "glaze"
-                :pathname "core-plugins/glaze"
+               (:module "glint"
+                :pathname "core-plugins/glint"
                 :depends-on ("core" "views" "models")
                 :components ((:file "plugin" :depends-on ("views" "models"))
                              (:module "views"

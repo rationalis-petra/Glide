@@ -51,7 +51,6 @@
   ()
   (:documentation "A mode augments a view somehow: "))
 
-
 ;; class-level generics
 (defgeneric view-supported-types (view-class)
   (:documentation "Returns a list of model classes which this view supports")

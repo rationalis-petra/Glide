@@ -38,7 +38,6 @@
   (mapcar #'initialize-plugin *plugins*)
   (mapcar #'load-plugin *plugins*))
 
-
 (defun main ()
   (let ((app (gtk4:make-application
               :application-id "org.rationalis-petra.glide"

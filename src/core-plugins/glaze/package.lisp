@@ -16,4 +16,4 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 (defpackage glaze
-  (:use :cl :iterate :glide :esrap-liquid))
+  (:use :cl :iterate :glide))

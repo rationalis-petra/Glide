@@ -15,18 +15,32 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-(in-package :glaze)
+(in-package :glint)
+
+;; glint is a package for interacting with the glint document format,
+;; a type of markup language.  
+;; 
+;; primary features include parsing and rendering to html.
+;; 
+
+(defun glint-new (window)
+  (window-add-view
+   window
+   (make-instance 'glint-view
+                  :model (make-default-doc))))
 
 
-(defvar +glaze-plugin+
+(defvar +glint-plugin+
   (make-instance
    'plugin
-   :name "Glaze"
-   :about "A plugin for the Glaze build tool"
-   ;; :views (list 'glint-view)
-   ;; :models (list 'glint-model)
-   ;; :menu-bar-submenus (list (list "Views" (cons "Glint" #'glint-new)))
-   ))
+   :name "Glint"
+   :about "A plugin for the Glint document Language"
+   :views (list 'glint-view)
+   :models (list 'glint-model)
+
+   :menu-bar-submenus (list
+                       (list "Views" ;; TODO: when!!
+                             (cons "Glint" #'glint-new)))))
 
 ;; (defvar make-glyph-playground-layout () (make-vertical-layout ()))
 
