@@ -20,7 +20,8 @@
 
 (defclass model ()
   ((file
-    :accessor :file
+    :initarg :file
+    :accessor file
     :initform nil
     :documentation ""))
   (:documentation
@@ -31,9 +32,9 @@
 ;; • We have a model (with no corresponding file) and want to save it to a file
 ;; • We have a file (with particular format) and want to load a model from it
 (defclass file-format ()
-  ((extensions
-    :accessor extensions
-    :initarg :extensions)
+  (;; (extensions
+   ;;  :accessor extensions
+   ;;  :initarg :extensions)
    (loader
     :accessor loader)
    (saver
@@ -56,8 +57,10 @@
   (:method (model-class))
   (:documentation "File formats supported by a model"))
 
-
 (defvar *file-formats* nil)
-;; instance generics
 
-;; (defgeneric model-file-formats (model-class) ())
+(declaim (ftype (function (file) t) save-file))
+(defgeneric save-file (file-info model)
+  (:method (file-info (model model))
+           ;; TODO: check if file info is empty 
+           (message-error (format nil "Cannot save model: ~A" model))))

@@ -15,12 +15,13 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-;; WAL: The Widget Abstraction Layer
+;; Silc: User interface toolkit in common lisp (opal dialect)
 ;; Currently, Glide is dependent on GTK4 as a graphical backend. The hope is to
-;; be able to support multiple backends (GTK.xx, QT, etc.) by developing an
+;; be able to support multiple backends (GTK, QT, etc.) by developing an
 ;; abstract toolkit.
 ;; 
 
-(defpackage wal
+(defpackage silc
   (:use :cl))
+
 

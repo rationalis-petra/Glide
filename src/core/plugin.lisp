@@ -25,7 +25,7 @@
 ;; Globals relatedto plugins
 (defvar *plugins* nil)
 (defvar *start-view* nil)
-(defvar *commands* (make-hash-table :test #'equal))
+(defvar *command-groups* (make-hash-table))
 
 
 (defun register-plugin (plugin)
@@ -90,7 +90,8 @@ with this plugin")
 ;; (defgeneric unload (plugin))
 
 (defun load-plugin (plugin)
-  (iter (for (name command) in-hashtable (slot-value plugin 'commands))
-    (setf (gethash name *commands*) command)))
+  ;; (iter (for (name command) in-hashtable (slot-value plugin 'commands))
+  ;;   (setf (gethash name *commands*) command))
+  )
 
 ;; interface used 

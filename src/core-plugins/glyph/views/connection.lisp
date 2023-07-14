@@ -23,7 +23,7 @@
   (let* ((box (gtk4:make-box :orientation gtk4:+orientation-vertical+
                              :spacing 0))
          (repl-view (gtk4:make-text-view
-                     :buffer (glide:gtk-buffer (repl-model model)))))
+                     :buffer (gtk-buffer (repl-model model)))))
 
     (gtk4:box-append box repl-view)
     (setf (gtk-widget view) box)))

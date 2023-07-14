@@ -18,10 +18,6 @@
 
 ;; utilities for manipulating strings
 
-(defpackage extra.string
-  (:use :cl :iterate)
-  (:export
-   :split-on))
 (in-package :extra.string)
 
 (defun split-on (string char &key (empty-substrs :keep))

@@ -1,4 +1,4 @@
-;;;; package.lisp
+;;;; settings.lisp
 
 ;; Copyright (C) 2023 Connor Redfern
 ;;
@@ -15,7 +15,16 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-(defpackage extra.string
-  (:use :cl :iterate)
-  (:export
-   :split-on))
+(in-package :glide/base)
+
+;; The settings model simple wraps a settings object defined in core. It is not
+;; very interesting... 
+
+;; TODO: change parent to object-model!
+(defclass settings-model (model)
+  ((settings-object
+    :type settings)))
+
+
+;; The settings model simple wraps a settings object defined in core. It is not
+;; very interesting... 

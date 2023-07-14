@@ -17,9 +17,6 @@ rse
 
 (in-package :glint)
 
-;; the representation of 
-
-;;
 
 (defclass glint-model (model)
   ((root
@@ -30,9 +27,10 @@ rse
 (defclass node ()
   ((source)
    (params)
-   (contents
-    :initarg :contents
-    :accessor contents)))
+   ;; (contents
+   ;;  :initarg :contents
+   ;;  :accessor contents)
+   ))
 
 (defgeneric render (doc type)
   (:documentation "Render a document represented by NODE to a particlar backend
@@ -60,8 +58,7 @@ rse
   (pred (lambda (c) (not (char= #\|))) character)
   #\|
   (pred (lambda (c) (not (char= #\⦘))) character)
-  #\⦘
-  )
+  #\⦘)
 
 (defun parse-default (string) string)
 
@@ -71,6 +68,45 @@ rse
 
 (define-glint-rule bold ()
     (pred (lambda (c) (not (char= #\*))) character))
+
+;; Parser of Glint Documents:
+;; Glint documents are in a pseudo-markdown format
+;; They are intended specifically for STEM note-taking. As such, there are
+;; specific facilities for
+;; + Naming things like definitions and theorems, and linking them to examples, 
+;;   proofs, etc. 
+;; + Bibliographies/referencing
+;; + Mathematical notation (Via TeX)
+;; + Constructing and rendering domain-specific diagrams via Glyph, e.g.
+;;   + Proof Tress
+;;   + Category-theory diagrams
+;;   + Graphs (graph-theory)
+;;   + Molecules
+;;   + Plots
+;; + Embedding data/objects and mathematical/statistical analysis.
+;; + ...
+;; Essentially a very powerful, functional python notebook.
+;; 
+;; Text formatting: like markdown:
+;; + ** → bold
+;; + __ → italic
+;; + ~~ → strikethrough
+;; + `` → monospace
+;; + \  → escape
+;; + #ⁿ → titles
+;; Caveats
+;; + Text under titles/sections must be indented!
+;; + 
+;; 
+;; Complex objects: documents+node structure 
+;; + [table| --table description ]
+;; + [M| -- latex math]
+;; + [m| -- latex math (inline)]
+;; + [m| -- latex math (inline)]
+;; + [plist| property list]
+;; + [def, for| definition text]
+;; + [ex, for| example context]
+;; + [ex, for| example context]
 
 
 (defun parse-document (string) string)
@@ -93,41 +129,37 @@ rse
 
 
 (defnode italic-node
-  (:parse "i" #'parse-default)
-  (:render (node :html)
-           `(:i ,@(mapcar (alexandria:rcurry #'render :html) (contents node)))))
+  (:parse "i" #'(lambda (x) x))
+  ;(:child string)
+  (:render
+   (node :html) `(:i ,(contents node))))
 
 (defnode bold-node
-  (:parse "b" #'parse-default)
-  (:render (node :html)
-           `(:b ,@(mapcar (alexandria:rcurry #'render :html) (contents node)))))
+  (:parse "b" #'(lambda (x) x))
+  ;(:child string)
+  (:render
+   (node :html)
+   `(:b ,(contents node))))
 
 (defnode paragraph-node
   (:parse "p" #'parse-default)
-  (:render (node :html)
-           `(:p ,@(mapcar (alexandria:rcurry #'render :html) (contents node)))))
+  (:render
+   (node :html)
+   `(:p ,@(mapcar (⟜ #'render :html) (contents node)))))
 
 (defnode text-node
   (:parse "raw" (lambda (x) x))
-  (:render (node :html) (contents node)))
+  (:render
+   (node :html) (contents node)))
 
-
-;; (defclass bold-node (node) ())
-;; (defmethod render ((node bold-node) (type (eql :html)))
-;;   `(:b ,@(mapcar (alexandria:rcurry render :html) (contents node))))
-
-;; (defclass bold-node (node) ())
-;; (defmethod render ((node bold-node) (type (eql :html)))
-;;   `(:b ,@(mapcar (alexandria:rcurry render :html) (contents node))))
 
 (defun make-default-doc ()
     (make-instance 'glint-model
      :root
-     (make-instance 'paragraph-node
-                    :contents (list
-                               "Hello, World! "
-                               (make-instance 'bold-node :contents
-                                              (list "Hello"))
-                               (make-instance 'italic-node :contents
-                                              (list "World"))))))
+     (make-instance
+      'paragraph-node
+      :contents (list
+                 "Hello, World! "
+                 (make-instance 'bold-node :contents "Hello")
+                 (make-instance 'italic-node :contents "World")))))
 

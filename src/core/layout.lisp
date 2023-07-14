@@ -79,7 +79,6 @@
   ((gtk-widget
     :accessor gtk-widget)))
 
-
 (defgeneric (setf child) (child parent)
   (:method (child (parent single-layout))
     (when (slot-boundp parent 'child)
@@ -157,6 +156,21 @@
 
     (setf (children layout) wrapped-children)
     layout))
+
+(defgeneric active-view (parent))
+
+(defmethod active-view ((parent frame)) (view parent))
+
+(defmethod active-view ((parent single-layout))
+  (active-view (child parent)))
+
+(defmethod active-view ((parent paned-layout))
+  (cond
+    ((gtk4:widget-has-focus-p (gtk-widget (start-child parent))) (start-child parent))
+    ((gtk4:widget-has-focus-p (gtk-widget (end-child parent))) (start-child parent))
+    (t nil)))
+
+;;(defgeneric active-view ((parent tabbed-layout)))
 
 (defgeneric swap-layout-to (layout class &key &allow-other-keys)
   (:documentation "Sets Internal class to provided class-designator"))

@@ -15,7 +15,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-(in-package :glide)
+(in-package :glide/base)
 
 (defclass text-view (view)
   ((input-mode
@@ -48,20 +48,28 @@
 
 
 (defmethod initialize-instance :after ((view text-view) &key model input-mode)
-  (declare (ignore model input-mode))
+  (declare (ignore input-mode))
+  (unless (slot-boundp view 'model)
+    (setf (slot-value view 'model) (make-instance 'text-model)))
+
   (with-slots (gtk-widget model input-mode input-state) view
     (setf gtk-widget (gtk4:make-text-view
                       :buffer (gtk-buffer model)))
     (setf (gtk4:widget-vexpand-p gtk-widget) t)
+    (setf (gtk4:scrollable-vscroll-policy gtk-widget) gtk4:+scrollable-policy-natural+)
 
     ;; Setup input mode & key controller
     (setf input-state (make-instance 'input-mode-state :input-mode input-mode))
     (let ((key-controller (gtk4:make-event-controller-key)))
       (gtk4:connect key-controller "key-pressed"
                (lambda (controller keyval keycode state)
-                 (declare (ignore controller state))
-                 (on-keypress view keyval keycode)))
+                 (declare (ignore controller keycode))
+                 (on-keypress view keyval state)))
       (gtk4:widget-add-controller gtk-widget key-controller))))
+
+(defmethod (setf model) (model (view text-view))
+  (setf (gtk4:text-view-buffer (gtk-widget view)) (gtk-buffer model))
+  (setf (slot-value view 'model) model))
 
 ;; Satisfying the interface
 (defmethod view-supported-types ((view-class (eql (find-class 'text-view))))
@@ -77,6 +85,10 @@
 
 
 (defmethod view-commands ((view text-view)) nil)
+
+
+(defmethod on-keypress ((view text-view) keyval keystate)
+  (input-mode-on-keypress view keyval keystate))
 
 
 (defmethod initialize-instance ((mode input-mode) &key table)
@@ -134,8 +146,8 @@
                               (cons :release-valid ret-char)))))))))))
 
 
-(defun on-keypress (view keyval keycode)
-  (declare (ignore keycode))
+(defun input-mode-on-keypress (view keyval keystate)
+  (declare (ignore keystate))
   (if (< keyval (expt 2 15))
     (let ((result (step-input-state (input-state view) keyval)))
       (if result

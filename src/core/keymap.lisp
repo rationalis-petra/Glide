@@ -1,4 +1,4 @@
-;;;; view.lisp
+;;;; keymap.lisp
 
 ;; Copyright (C) 2023 Connor Redfern
 ;;
@@ -40,19 +40,30 @@
   (:documentation "A keymap with different modes, e.g. insert, normal, etc."))
 
 (defclass keystate ()
-  ((keymap)
-   (current-key-seq)
-   (current-state)))
+  ((keymap
+    :initform nil
+    :documentation "Map containing the set of all next keys in the keymap")
+   (current-command
+    :initform nil
+    :documentation "The command corresponding to the sequence of key-presses
+  that lead to the current state (can be nil if none exists)")
+   (current-state
+    :initform nil
+    :documentation "The current set of")))
 
 (defclass keyseq ()
-  ()
+  ((command
+    :accessor command)
+   (keys
+    :accessor keys))
   (:documentation ""))
 
-(defun parse-key-seq (string))
+(defun parse-key-seq (string)
+  (¨ #'parse-key (extra.string:split-on string #\Space)))
 
 
-(defgeneric key-action (keymap keystate key))
-(defmethod key-action ((keymap keymap) keystate key)
+(defgeneric key-action (keymap keystate key modifierstate))
+(defmethod key-action ((keymap keymap) keystate key modifierstate)
   (let ((state-map (assoc keystate (mode-maps keymap))))
     ( )))
 

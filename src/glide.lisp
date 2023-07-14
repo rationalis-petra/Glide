@@ -19,6 +19,7 @@
 
 (in-package #:glide)
 
+
 (defun initialize (app)
   ;; Make sure state is reset 
   (setf +settings-directory+ 
@@ -31,8 +32,8 @@
            (print "unable to locate config direcotry for your os!")
            (exit))))
   (load-settings +settings-directory+)
-  (setf *commands* (make-hash-table :test #'equal))
-  (set-app-theme *default-theme*)
+  ;; (setf *commands* (make-hash-table :test #'equal))
+  (set-app-theme (setting '(style-settings theme)))
 
   ;; initialize plugins
   (mapcar #'initialize-plugin *plugins*)
@@ -54,8 +55,8 @@
     (unwind-protect
          (gio:application-run app nil)
       (progn
-        (mapcar (alexandria:compose
+        (mapcar (∘
                  #'gtk4:window-close
-                 (alexandria:rcurry #'gobj:pointer-object 'window))
+                 (⟜ #'gobj:pointer-object 'window))
                 (glib:glist-list (gtk4:application-windows app)))
         (glib:idle-add (lambda () (gio:application-quit app)))))))

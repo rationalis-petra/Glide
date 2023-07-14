@@ -30,7 +30,7 @@
                :cl-glib
                :cl-gdk4
                :cl-gtk4
-               :cl-gtk4.webkit
+               ;:cl-gtk4.webkit
                ;; html
                :lass
                :spinneret)
@@ -39,14 +39,26 @@
                (:file "glide" :depends-on ("defaults"))
 
                (:file "defaults"
-                :depends-on ("core" "views" "models" "themes"))
+                :depends-on ("core" "base" "themes"))
 
                ;; core components
-               (:file "package")
+               (:file "package" :depends-on ("extra"))
+
+               (:module "extra"
+                :pathname "extra"
+                :components
+                ((:module "string"
+                  :pathname "string"
+                  :components ((:file "package")
+                               (:file "string")))
+                 (:module "coll"
+                  :pathname "coll"
+                  :components ((:file "package")
+                               (:file "coll")))))
 
                (:module "core"
                 :pathname "core"
-                :depends-on ("package")
+                :depends-on ("package" "extra")
                 :components ((:file "plugin")
                              (:file "view")
                              (:file "model")
@@ -54,49 +66,57 @@
                              (:file "keymap")
                              (:file "layout")
                              (:file "reporting")
-                             (:file "customise")
                              (:file "commands")
+                             (:file "customise")
                              (:file "window" :depends-on ("layout" "reporting" "customise"))))
-
-               (:module "models"
-                :pathname "models"
-                :depends-on ("core")
-                :components ((:file "text")
-                             (:file "list")))
-
-               (:module "views"
-                :pathname "views"
-                :depends-on ("core" "models")
-                :components ((:file "text")
-                             (:file "list")
-                             (:file "dashboard")))
 
                (:module "themes"
                 :pathname "themes"
                 :depends-on ("core")
                 :components ((:file "explorer")))
 
+               (:module "base"
+                :pathname "core-plugins/base"
+                :depends-on ("core")
+                :components ((:file "package")
+                             (:module "models"
+                             :pathname "models"
+                             :depends-on ("package")
+                             :components ((:file "text")
+                                          (:file "list")))
+                             (:module "views"
+                              :pathname "views"
+                              :depends-on ("models")
+                              :components ((:file "text")
+                                           (:file "list")
+                                           (:file "dashboard")))
+
+                             (:file "commands" :depends-on ("package"))
+                             (:file "plugin"
+                              :depends-on ("views" "commands"))))
+
+
                ;; The glyph (built-in) plugin
                (:module "glyph"
                 :pathname "core-plugins/glyph"
-                :depends-on ("core" "views" "models")
-                :components ((:file "plugin" :depends-on ("views" "models"))
+                :depends-on ("base")
+                :components ((:file "package")
+                             (:module "models"
+                              :pathname "models"
+                              :depends-on ("package")
+                              :components ((:file "code")
+                                           (:file "connection")))
                              (:module "views"
                               :pathname "views"
                               :depends-on ("models")
                               :components ((:file "connection")
                                            (:file "connections")
                                            (:file "glyph")))
-                             (:module "models"
-                              :pathname "models"
-                              :depends-on ("package")
-                              :components ((:file "code")
-                                           (:file "connection")))
-                             (:file "package")))
+                             (:file "plugin" :depends-on ("views" "models"))))
 
                (:module "glint"
                 :pathname "core-plugins/glint"
-                :depends-on ("core" "views" "models")
+                :depends-on ("base")
                 :components ((:file "plugin" :depends-on ("views" "models"))
                              (:module "views"
                               :pathname "views"

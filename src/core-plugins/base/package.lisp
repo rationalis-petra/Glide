@@ -15,7 +15,29 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-(defpackage extra.string
-  (:use :cl :iterate)
+(defpackage glide/base
+  (:use :cl :iterate :glide :trivial-utf-8)
   (:export
-   :split-on))
+
+   :text-view
+   :+unicode-input-mode+
+   :input-mode
+
+   :dashboard-view
+
+   :abstract-list-view
+   :make-list-item-widget
+   :update-list-item-widget
+
+   ;;utility
+   :user-save-file
+   :user-open-file
+
+   :text-model
+   :gtk-buffer :text-model-string :text-model-insert :text-model-end-iter
+
+   :list-model
+   :emptyp
+   :clear
+   :get-element
+   :add-element))

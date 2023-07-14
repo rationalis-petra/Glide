@@ -60,11 +60,19 @@
    :name "Glyph"
    :about "A plugin for the Glyph Language"
    ;; commands should have a 'when' clause also!
-   :commands (hash-table-from-list
-              (list
-               (list "glyph:connections" #'list-connections)
-               (list "glyph:server" #'show-server)
-               (list "glyph:playground" #'new-playground)))
+   :commands (plugin-commands
+               (command-group :glyph-globals
+                              (:when t)
+                              (:elements
+                               (command :list-connections
+                                        (:function #'list-connections)
+                                        (:title "Connections"))
+                               (command :show-server
+                                        (:function #'show-server)
+                                        (:title "Show Servers"))
+                               (command :open-playground
+                                        (:function #'new-playground
+                                                   (:title "Open Playground"))))))
 
    :views (list 'glyph-view)
    ;; :modes

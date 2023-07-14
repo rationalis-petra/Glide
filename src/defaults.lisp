@@ -21,23 +21,21 @@
 
 
 (setf
- *default-theme* +explorer-dark-theme+
-
  *make-default-layout*
  (lambda (parent)
    (make-instance 'single-layout
-                  :child (make-instance 'dashboard-view)
+                  :child (make-instance 'glide/base:dashboard-view)
                   :parent parent))
 
  *make-default-view* 
- (lambda () (make-instance 'dashboard-view))
+ (lambda () (make-instance 'glide/base:dashboard-view))
 
  *default-menu-desc*
  (list
   (list "Views"
-        (cons "File Open" #'open-file )
-        (cons "File Save" (lambda (window) (message-info "file saved!")))
-        (cons "File New" (lambda (window) (message-info "file new!"))))
+        (cons "File Open" #'glide/base:user-open-file)
+        (cons "File Save" #'glide/base:user-save-file)
+        (cons "New" (lambda (window) (message-info "file new!"))))
   (list "Settings"
         (cons "Application" (lambda (window) (message-info "application settings")))
         (cons "Window" (lambda (window) (message-info "window settings")))
@@ -59,3 +57,14 @@
               (lambda (window)
                 (declare (ignore window))
                 (message-info "Where is...?"))))))
+
+(define-settings-schema style-settings
+  (theme
+   theme
+   +explorer-light-theme+)
+  (dialog-preference
+   (or (eql :minibfufer) (eql :popup))
+   :minibuffer))
+
+;; (defvar *default-plugins*
+;;   (list +base-plugin+ +glaze-plugin+ +glint-plugin+ +glyph-plugin+))

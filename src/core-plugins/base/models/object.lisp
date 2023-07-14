@@ -1,4 +1,4 @@
-;;;; package.lisp
+;;;; object.lisp
 
 ;; Copyright (C) 2023 Connor Redfern
 ;;
@@ -15,7 +15,14 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-(defpackage extra.string
-  (:use :cl :iterate)
-  (:export
-   :split-on))
+(in-package :glide/base)
+
+;; This file defines the 'object' model: a model whose data is a lisp object.
+;; It is intended that views over this model offer introspection capabilities 
+;; allowing one to view the object's class, slots, etc.
+
+(defclass object-model (model)
+  ((lisp-object
+    :type settings)))
+
+

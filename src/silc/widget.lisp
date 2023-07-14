@@ -1,4 +1,4 @@
-;;;; settings.lisp
+;;;; widget.lisp
 
 ;; Copyright (C) 2023 Connor Redfern
 ;;
@@ -15,14 +15,16 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-(in-package :glide)
+(in-package :silc)
 
+(defclass widget ()
+  ((vexpand-p
+    :initarg :vexpand-p
+    :initform nil)
+   (hexpand-p
+    :initarg :hexpand-p
+    :initform nil)))
 
-(defclass settings-view (view)
-  ()
-  (:documentation "A dashboard or start-screen"))
+(defclass backend ())
 
-
-(defmethod initialize-instance :after ((view settings-view) &key model)
-  ;; 
-  )
+(defgeneric reify (widget backend))

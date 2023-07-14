@@ -28,7 +28,7 @@
     :documentation "Used to give each message a unique id")
    (repl-model
     :accessor repl-model
-    :initform (make-instance 'glide:text-model))
+    :initform (make-instance 'text-model))
    (repl-lock
     :accessor repl-lock
     :initform (bt:make-lock))
@@ -62,16 +62,16 @@
 
 (defun write-message (connection message)
   (gtk4:run-in-main-event-loop ()
-      (glide:text-model-insert
+      (text-model-insert
        (repl-model connection)
-       (glide:text-model-end-iter (repl-model connection))
+       (text-model-end-iter (repl-model connection))
        (format nil "~A~%" message))))
 
 (defun write-error (connection message)
   (gtk4:run-in-main-event-loop ()
-      (glide:text-model-insert
+      (text-model-insert
        (repl-model connection)
-       (glide:text-model-end-iter (repl-model connection))
+       (text-model-end-iter (repl-model connection))
        (format nil "Error: ~A~%" message))))
 
 ;; Sending a message 

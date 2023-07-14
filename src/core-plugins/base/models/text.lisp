@@ -15,7 +15,7 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-(in-package :glide)
+(in-package :glide/base)
 
 
 (defclass text-model (model)
@@ -27,8 +27,21 @@
     :initform nil))
   (:documentation "Wraps a GTK4 text buffer"))
 
+;; Method overrides
 
-;(defmethod initialize-instance ((model text-model) &key))
+(defmethod initialize-instance :after ((model text-model) &key from)
+  (when from
+    (setf (gtk:text-buffer-text (gtk-buffer model)) from)))
+
+(defmethod save-file (file-info (model text-model))
+  (with-open-file (out-file (path file-info)
+                            :direction :output
+                            :if-does-not-exist :create
+                            :if-exists :overwrite)
+    (format out-file (text-model-string model))))
+
+
+;; Text-model specific functions
 
 (declaim (ftype (function (text-model) string) text-model-string))
 (defun text-model-string (model)
@@ -58,9 +71,12 @@
    string
    (utf-8-byte-length string)))
 
+(defun text-model-create-tag-type (model name &key (editable t))
+  (let ((tag (gtk4:make-text-tag :name name))
+        (tag-table (gtk4:text-buffer-tag-table (gtk-buffer model))))
 
-;; (declaim (ftype (function (text-model &key (log-error t)) t) text-model-save))
-;; (defun text-model-save (model)
-;;   (with-slots (source-file) model
-;;     (when source-file
-;;       ())))
+    ;; TOOD: add more properties
+    (setf (gir:property tag :editable) editable)
+
+    (gtk4:text-tag-table-add tag-table tag)))
+

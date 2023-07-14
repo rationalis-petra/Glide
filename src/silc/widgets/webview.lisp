@@ -1,4 +1,4 @@
-;;;; settings.lisp
+;;;; webview.lisp
 
 ;; Copyright (C) 2023 Connor Redfern
 ;;
@@ -15,16 +15,13 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-(in-package :glide)
+(in-package :silc)
 
-;; The settings model simple wraps a settings object defined in core. It is not
-;; very interesting... 
+(defclass webview (widget)
+  ())
 
-;; TODO: change parent to object-model!
-(defclass settings-model (model)
-  ((settings-object
-    :type settings)))
+(defun webview ())
 
 
-;; The settings model simple wraps a settings object defined in core. It is not
-;; very interesting... 
+(defmethod reify ((webview webview) (backend gtk4-backend))
+  (let ((gtk-widget))))

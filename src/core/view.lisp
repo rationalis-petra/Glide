@@ -35,9 +35,18 @@
     :accessor keymaps
     :initform nil
     :documentation "The set of keymaps associated with this view")
+
+   ;; 'Internal/limited Access' state: should only be accessed when 
+   (keystate
+    :accessor keystate
+    :documentation "The current keystate - used for keeping track of key
+    chords")
    (gtk-widget
     :accessor gtk-widget
     :documentation "The gtk4 widget that this view")
+   (key-controller
+    :accessor key-controller
+    :documentation "The gtk4 key controller (used for keymaps)")
    (transient-p
     :accessor transient-p
     :initform nil
@@ -82,3 +91,31 @@
   (:documentation "Associate a keymap with a particular view. Keymaps added
   later will have higher priority")
   (:method ((view view) keymap) (pushnew keymap (keymaps view))))
+
+(defgeneric on-keypress (view keyval modifier-state)
+  (:documentation "Called on a view whenever a key is pressed.")
+  (:method ((view view) keyval modifier-state)
+    ;; TODO: lookup values in keymap
+    (let ((action (key-action keyval modifier-state)))
+      ;; A command to run
+      ;; A t, indicating that the state was updated
+      ;; A nil, indicating no action was found
+      (cond
+        ((typep action 'command) (funcall action))
+        ((null action) (call-next-method))
+        (t nil)))))
+
+
+(defmethod initialize-instance :after ((view view) &key model modes &allow-other-keys)
+  (declare (ignore model modes))
+  (let ((key-controller (gtk4:make-event-controller-key)))
+    (gtk4:connect key-controller "key-pressed"
+                  (lambda (controller keyval keycode state)
+                    (declare (ignore controller state))
+                    (on-keypress view keyval state)))
+    (setf (key-controller view) key-controller)))
+
+
+(defmethod (setf gtk-widget) (gtk-widget (view view))
+  (setf (slot-value view 'gtk-widget) gtk-widget)
+  (gtk4:widget-add-controller gtk-widget (key-controller view)))

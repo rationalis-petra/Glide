@@ -21,16 +21,6 @@
 ;; • Loading/Saving a file
 ;; • Splitting a frame/view horizontally or vertically
 ;; • Closing a frame 
-(defmacro defcommand (name (&body alist))
-  (let ((title (cadr (assoc :title alist)))
-        (documentation (cadr (assoc :documentation alist))))
-  `(progn
-     (setf (gethash ,name *commands*)
-           (make-instance 'command
-                          :title title
-                          :documentation documentation)))))
-
-(defvar *commands* (make-hash-table))
 
 (defclass command ()
   ((function
@@ -38,25 +28,57 @@
    (args
     :initarg :args)
    (title
+    :accessor title
     :initarg :title)
    (documentation
     :initarg :documentation))
   (:documentation "A command represents a common lisp function which is exposed
   to the user via, e.g. a keybind, menu-option or button"))
 
-(defun open-file (window)
-  (gtk4:file-dialog-open
-   (gtk4:make-file-dialog)
-   (gtk-widget window)
-   nil
-   (lambda (file) (message-info (format nil "file was: ~A" file)))
-   nil))
+(defclass command-group ()
+  ((elements
+    :accessor elements
+    :initarg :elements
+    :initform nil
+    :documentation "Elements contained within this command-group: either
+  commands, or command sub-groups.") 
+   (enabled
+    :initarg :enabled
+    :initform t)
+   (documentation
+    :initarg :documentation))
+  (:documentation "A command group reprsents a set of commands. Command groups
+  can be enabled or disabled depending on the current view & mode."))
 
-;; (defcommand (base open-file)
-;;   (:function #'open-file)
-;;   (:title "Open File"))
 
-;; (defcommand (base save-file)
-;;   (:function () save-file)
-;;   (:title "Save File")
-;;   (:when (lambda (view) (can-save view))))
+(defparameter *commands*
+  (make-instance 'command-group :enabled t))
+
+(defmacro plugin-commands (&body args)
+  ;; TODO: make this macro hygenic! (I think that's necessary?)
+  `(macrolet
+       ((command-group (name &rest args)
+          "Produce a plist entry "
+          (let ((when-form (cadr (assoc :when args)))
+                (elements-forms (cdr (assoc :elements args))))
+            `(list ,name (make-instance
+                          'command-group
+                          :enabled ,when-form
+                          :elements (append ,@elements-forms)))))
+        (command (name &rest args)
+          "Produce a plist entry for a command group"
+          (let ((function (cadr (assoc :function args)))
+                (title (cadr (assoc :title args))))
+            `(list ,name (make-instance
+                          'command
+                          :function ,function
+                          :title ,title)))))
+     (append ,@args)))
+
+(defmacro command (name &rest args)
+  (declare (ignore name args))
+  (error "can only use command macro inside body of plugin-commands macro"))
+
+(defmacro command-group (name &rest args)
+  (declare (ignore name args))
+  (error "can only use command-group macro inside body of plugin-commands macro"))

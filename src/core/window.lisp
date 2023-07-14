@@ -19,43 +19,14 @@
 (in-package :glide)
 
 
-(defclass minibuffer ()
-  ((gtk-widget
-    :accessor gtk-widget)
-   (text-model
-    :accessor text-model)))
 
-(defmethod initialize-instance :after ((minibuffer minibuffer) &key)
-  (let* ((text-model (make-instance 'text-model))
-         (gtk-widget (gtk4:make-text-view
-                      :buffer (gtk-buffer text-model))))
-    (setf (gtk-widget minibuffer) gtk-widget)
-    (setf (text-model minibuffer) text-model)
 
-    (setf (gtk4:text-view-editable-p gtk-widget) nil)
-    (gtk4:widget-add-css-class gtk-widget "minibuffer")
 
-    (flet ((show-info-message (message)
-             (setf (text-model-string (text-model minibuffer)) message)
-             (gtk4:widget-remove-css-class (gtk-widget minibuffer) "warning-text")
-             (gtk4:widget-remove-css-class (gtk-widget minibuffer) "error-text"))
-           (show-warning-message (message)
-             (setf (text-model-string (text-model minibuffer)) message)
-             (gtk4:widget-remove-css-class (gtk-widget minibuffer) "error-text")
-             (gtk4:widget-add-css-class (gtk-widget minibuffer) "warning"))
-           (show-error-message (message)
-             (setf (text-model-string (text-model minibuffer)) message)
-             (gtk4:widget-remove-css-class (gtk-widget minibuffer) "warning-text")
-             (gtk4:widget-add-css-class (gtk-widget minibuffer) "error-text")))
-
-      (observe #'show-info-message *info-mailbox*)
-      (observe #'show-warning-message *warning-mailbox*)
-      (observe #'show-error-message *error-mailbox*))))
 
 (defclass window ()
   ((focus-view
     :accessor window-focus-view
-    :documentation "The current view that is")
+    :documentation "The current view that is in focus")
    (gtk-widget
     :reader gtk-widget
     :documentation "The underlying gtk window")
@@ -171,6 +142,11 @@
            (gio:make-simple-action
                 :name "command_palette"
                 :parameter-type nil)))
+    ;;
+    (setf (gtk4:widget-size-request overlay)
+          (list (- (gtk4:widget-width overlay) 10)
+                (gtk4:widget-height overlay)))
+
     (setf (slot-value window 'layout-parent) overlay)
     (setf (slot-value window 'gtk-widget) gtk-window)
 
@@ -226,6 +202,9 @@
     (setf (gtk4:overlay-child layout-parent) (gtk-widget new-layout))
     (setf layout new-layout)))
 
+(defmethod active-view ((window window))
+  (active-view (layout window)))
+
 ;; TODO: switch on preferred-location, can be
 ;; nil (no preference)
 ;; local-(tab left right top bottom)
@@ -245,4 +224,5 @@
      (layout-add-child-absolute (layout window) view))
     (otherwise
      (message-error (format nil "window-add-view: location-preference ~A not recognized~%" preferred-location)))))
+
 

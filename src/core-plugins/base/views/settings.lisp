@@ -1,4 +1,4 @@
-;;;; object.lisp
+;;;; settings.lisp
 
 ;; Copyright (C) 2023 Connor Redfern
 ;;
@@ -15,14 +15,14 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-(in-package :glide)
-
-;; This file defines the 'object' model: a model whose data is a lisp object.
-;; It is intended that views over this model offer introspection capabilities 
-;; allowing one to view the object's class, slots, etc.
-
-(defclass object-model (model)
-  ((lisp-object
-    :type settings)))
+(in-package :glide/base)
 
 
+(defclass settings-view (view)
+  ()
+  (:documentation "A dashboard or start-screen"))
+
+
+(defmethod initialize-instance :after ((view settings-view) &key model)
+  ;; 
+  )

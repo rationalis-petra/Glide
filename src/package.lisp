@@ -16,24 +16,33 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 (defpackage glide
-  (:use :cl :iterate :trivial-utf-8 :trivia)
+  (:use :cl :extra.coll :iterate :trivia)
   (:export
    ;; main function, for easy running
    :main :glide-app
 
    ;; customization
+   :setting
    :*make-default-layout*
    :deftheme
    :+explorer-theme+
+   :style-settings
+   :theme
+   :dialog-preference
 
    ;; window stuf
    :window
    :window-add-view 
+   :minibuffer
+   :active-view
+   :enter-action
 
    ;; models & file formats
    :model
    :file-format
    :model-file-formats
+   :file
+   :path
 
    ;; views
    :view
@@ -41,36 +50,22 @@
    :gtk-widget
    :add-keymap
    :modeline-widgets
+   :transient-p
 
    ;; keys
    :keymap
    :defkeymap
 
-   ;; Plugin hook interface
+   ;;;; Plugin Utilities
    :plugin :register-plugin
+
+   ;; commands
+   :plugin-commands :command :command-group
 
    ;; misc. API
    :message-info
    :message-warning
-   :message-error
-
-   :text-view
-   :+unicode-input-mode+
-   :input-mode
-
-   :abstract-list-view
-   :make-list-item-widget
-   :update-list-item-widget
-
-
-   :text-model
-   :gtk-buffer :text-model-string :text-model-insert :text-model-end-iter
-
-   :list-model
-   :emptyp
-   :clear
-   :get-element
-   :add-element))
+   :message-error))
 (in-package :glide)
 
 ;; Global Variables 
