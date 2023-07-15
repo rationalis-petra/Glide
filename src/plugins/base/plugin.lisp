@@ -80,6 +80,9 @@
               (command-group :base
                (:when t)
                (:elements
+                (command :text-view
+                         (:function #'new-text-view)
+                         (:title "New Text View"))
                 (command :open-file
                          (:function #'user-open-file)
                          (:title "Open File"))
@@ -98,7 +101,4 @@
   (progn
     ;; TODO: remove this!
     (setf has-init t)
-    ;; (make-connection)
-    ;; (setf *make-start-layout* #'make-glyph-playground-layout)
-
     (register-plugin +base-plugin+)))

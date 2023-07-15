@@ -53,9 +53,9 @@
 
 
 (defun run-command (window text)
-  (let ((result (gethash text *commands*)))
+  (let ((result (gethash text *text-commands*)))
     (if result
-        (funcall result window)
+        (funcall (command-function result) window)
         (message-error (format nil "Couldn't find command: ~A" text)))))
 
 

@@ -30,7 +30,7 @@
                :cl-glib
                :cl-gdk4
                :cl-gtk4
-               ;:cl-gtk4.webkit
+               :cl-gtk4.webkit
                ;; html
                :lass
                :spinneret)
@@ -76,7 +76,7 @@
                 :components ((:file "explorer")))
 
                (:module "base"
-                :pathname "core-plugins/base"
+                :pathname "plugins/base"
                 :depends-on ("core")
                 :components ((:file "package")
                              (:module "models"
@@ -98,7 +98,7 @@
 
                ;; The glyph (built-in) plugin
                (:module "glyph"
-                :pathname "core-plugins/glyph"
+                :pathname "plugins/glyph"
                 :depends-on ("base")
                 :components ((:file "package")
                              (:module "models"
@@ -115,7 +115,7 @@
                              (:file "plugin" :depends-on ("views" "models"))))
 
                (:module "glint"
-                :pathname "core-plugins/glint"
+                :pathname "plugins/glint"
                 :depends-on ("base")
                 :components ((:file "plugin" :depends-on ("views" "models"))
                              (:module "views"

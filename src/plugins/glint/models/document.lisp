@@ -114,15 +114,22 @@ rse
 (defmacro defnode (name &body body)
   (let* ((render (cdr (assoc :render body)))
          (type (elt (car render) 1))
+
          (nodesym (caar render))
-         (typesym (gensym))
+         (typesym (gensym "type"))
+
+         (contents-type (cadr (assoc :contents body)))
 
          (parse (cdr (assoc :parse body)))
          (parse-name     (elt parse 0))
          (parse-function (elt parse 1)))
 
     `(progn
-       (defclass ,name (node) ())
+       (defclass ,name (node)
+         ((contents
+           :initarg :contents
+           :accessor contents
+           :type ,contents-type)))
        (setf (gethash ,parse-name *node-types*) ,parse-function)
        (defmethod render ((,nodesym ,name) (,typesym (eql ,type)))
          ,@(cdr render)))))
@@ -130,25 +137,27 @@ rse
 
 (defnode italic-node
   (:parse "i" #'(lambda (x) x))
-  ;(:child string)
+  (:contents string)
   (:render
    (node :html) `(:i ,(contents node))))
 
 (defnode bold-node
   (:parse "b" #'(lambda (x) x))
-  ;(:child string)
+  (:contents string)
   (:render
    (node :html)
    `(:b ,(contents node))))
 
 (defnode paragraph-node
   (:parse "p" #'parse-default)
+  (:contents list)
   (:render
    (node :html)
    `(:p ,@(mapcar (⟜ #'render :html) (contents node)))))
 
 (defnode text-node
   (:parse "raw" (lambda (x) x))
+  (:contents string)
   (:render
    (node :html) (contents node)))
 

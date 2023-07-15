@@ -52,3 +52,9 @@
        (message-error "Unable to save file: no model for focus view"))
       (t (message-error "Unabled to save file: model has no file")))))
 
+(defun new-text-view (window)
+  (window-add-view
+   window
+   (make-instance 'text-view
+                  :model (make-instance 'text-model)
+                  :input-mode +unicode-input-mode+)))

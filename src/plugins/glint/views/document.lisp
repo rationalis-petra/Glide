@@ -20,23 +20,23 @@
 (defclass glint-view (view) ())
 
 ;; webkit available:
-;; (defmethod initialize-instance :after ((view glint-view) &key model)
-;;   (declare (ignore model))
-;;   (with-slots (gtk-widget model) view
-;;     (setf gtk-widget (webkit:make-web-view))
-;;     (setf (gtk4:widget-vexpand-p gtk-widget) t)
-;;     (setf (gtk4:widget-hexpand-p gtk-widget) t)
-;;     (webkit:web-view-load-html gtk-widget (render model :html) nil)))
-
-;; webkit not available (temporary)
 (defmethod initialize-instance :after ((view glint-view) &key model)
   (declare (ignore model))
   (with-slots (gtk-widget model) view
-    (setf gtk-widget (gtk4:make-text-view))
+    (setf gtk-widget (webkit:make-web-view))
     (setf (gtk4:widget-vexpand-p gtk-widget) t)
     (setf (gtk4:widget-hexpand-p gtk-widget) t)
-    (setf (gtk4:text-buffer-text (gtk4:text-view-buffer gtk-widget))
-          (render model :html))))
+    (webkit:web-view-load-html gtk-widget (render model :html) nil)))
+
+;; webkit not available (temporary)
+;; (defmethod initialize-instance :after ((view glint-view) &key model)
+;;   (declare (ignore model))
+;;   (with-slots (gtk-widget model) view
+;;     (setf gtk-widget (gtk4:make-text-view))
+;;     (setf (gtk4:widget-vexpand-p gtk-widget) t)
+;;     (setf (gtk4:widget-hexpand-p gtk-widget) t)
+;;     (setf (gtk4:text-buffer-text (gtk4:text-view-buffer gtk-widget))
+;;           (render model :html))))
 
 ;; webkit not available (when silc is working)
 ;; (defmethod initialize-instance :after ((view glint-view) &key model)

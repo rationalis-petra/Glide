@@ -32,7 +32,7 @@
            (print "unable to locate config direcotry for your os!")
            (exit))))
   (load-settings +settings-directory+)
-  ;; (setf *commands* (make-hash-table :test #'equal))
+  (setf *text-commands* (make-hash-table :test #'equal))
   (set-app-theme (setting '(style-settings theme)))
 
   ;; initialize plugins

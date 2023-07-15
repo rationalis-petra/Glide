@@ -25,7 +25,7 @@
 ;; Globals relatedto plugins
 (defvar *plugins* nil)
 (defvar *start-view* nil)
-(defvar *command-groups* (make-hash-table))
+(defvar *text-commands* (make-hash-table :test #'equal))
 
 
 (defun register-plugin (plugin)
@@ -65,7 +65,7 @@
   is loaded.")
    (commands
     :initarg :commands
-    :initform (make-hash-table)
+    :initform nil
     :documentation
     "A list of (named) commands that are always present when this plugin is loaded")
    (views
@@ -90,8 +90,23 @@ with this plugin")
 ;; (defgeneric unload (plugin))
 
 (defun load-plugin (plugin)
-  ;; (iter (for (name command) in-hashtable (slot-value plugin 'commands))
-  ;;   (setf (gethash name *commands*) command))
-  )
+  (let ((plugin-commands (slot-value plugin 'commands)))
+    (setf (elements *commands*)
+          (append plugin-commands (elements *commands*))))
 
-;; interface used 
+  (labels ((get-commands (mgroup)
+             (typecase mgroup
+               (command-group
+                (apply #'append
+                       (iter (for (name .  command) in (elements mgroup))
+                         (declare (ignore name))
+                         (collecting (get-commands command)))))
+               (command
+                (list mgroup)))))
+    (let ((commands
+            (apply #'append
+                     (mapcar #'get-commands
+                             (mapcar #'cdr (slot-value plugin 'commands))))))
+      (iter (for command in commands)
+        (setf (gethash (title command) *text-commands*) command)))))
+

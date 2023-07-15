@@ -24,6 +24,7 @@
 
 (defclass command ()
   ((function
+    :accessor command-function
     :initarg :function)
    (args
     :initarg :args)
@@ -61,19 +62,19 @@
           "Produce a plist entry "
           (let ((when-form (cadr (assoc :when args)))
                 (elements-forms (cdr (assoc :elements args))))
-            `(list ,name (make-instance
+            `(cons ,name (make-instance
                           'command-group
                           :enabled ,when-form
-                          :elements (append ,@elements-forms)))))
+                          :elements (list ,@elements-forms)))))
         (command (name &rest args)
           "Produce a plist entry for a command group"
           (let ((function (cadr (assoc :function args)))
                 (title (cadr (assoc :title args))))
-            `(list ,name (make-instance
+            `(cons ,name (make-instance
                           'command
                           :function ,function
                           :title ,title)))))
-     (append ,@args)))
+     (list ,@args)))
 
 (defmacro command (name &rest args)
   (declare (ignore name args))
