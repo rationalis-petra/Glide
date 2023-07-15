@@ -18,7 +18,9 @@
 (in-package :glide/base)
 
 (defclass text-view (view)
-  ((input-mode
+  ((gtk-text-view
+    :accessor gtk-text-view)
+   (input-mode
     :reader input-mode
     :initarg :input-mode
     :initform +unicode-input-mode+)
@@ -52,11 +54,14 @@
   (unless (slot-boundp view 'model)
     (setf (slot-value view 'model) (make-instance 'text-model)))
 
-  (with-slots (gtk-widget model input-mode input-state) view
-    (setf gtk-widget (gtk4:make-text-view
+  (with-slots (gtk-widget gtk-text-view model input-mode input-state) view
+    (setf gtk-text-view (gtk4:make-text-view
                       :buffer (gtk-buffer model)))
+    (setf gtk-widget (gtk4:make-scrolled-window))
+    (setf (gtk4:scrolled-window-child gtk-widget) gtk-text-view)
+
     (setf (gtk4:widget-vexpand-p gtk-widget) t)
-    (setf (gtk4:scrollable-vscroll-policy gtk-widget) gtk4:+scrollable-policy-natural+)
+    ;(setf (gtk4:scrollable-vscroll-policy gtk-widget) gtk4:+scrollable-policy-natural+)
 
     ;; Setup input mode & key controller
     (setf input-state (make-instance 'input-mode-state :input-mode input-mode))
@@ -65,7 +70,7 @@
                (lambda (controller keyval keycode state)
                  (declare (ignore controller keycode))
                  (on-keypress view keyval state)))
-      (gtk4:widget-add-controller gtk-widget key-controller))))
+      (gtk4:widget-add-controller gtk-text-view key-controller))))
 
 (defmethod (setf model) (model (view text-view))
   (setf (gtk4:text-view-buffer (gtk-widget view)) (gtk-buffer model))

@@ -18,34 +18,39 @@
 (in-package :glide)
 
 (defclass minibuffer ()
-  ((gtk-buffer
-    :accessor gtk-buffer)
+  ((text-buffer
+    :accessor text-buffer)
+   (text-widget
+    :accessor text-widget)
    (gtk-widget
     :accessor gtk-widget)
    (enter-action
     :accessor enter-action
-    :initform (lambda (minibuffer) (declare (ignore minibuffer))))))
+    :initform (lambda (minibuffer) (declare (ignore minibuffer))))
+   (stash
+    :accessor stash)))
 
 
 (defmethod initialize-instance :after ((minibuffer minibuffer) &key &allow-other-keys)
-  (setf (gtk-buffer minibuffer) (gtk4:make-text-buffer :table nil))
-  (setf (gtk-widget minibuffer) (gtk4:make-text-view :buffer (gtk-buffer minibuffer)))
+  (setf (text-buffer minibuffer) (gtk4:make-text-buffer :table nil))
+  (setf (gtk-widget minibuffer) (gtk4:make-text-view :buffer (text-buffer minibuffer)))
+  ;(setf (text-buffer minibuffer) (gtk-widget minibuffer))
 
-  (with-slots (gtk-buffer gtk-widget) minibuffer
+  (with-slots (text-buffer gtk-widget) minibuffer
     (setf (gtk4:widget-vexpand-p gtk-widget) nil)
     (setf (gtk4:text-view-editable-p gtk-widget) nil)
     (gtk4:widget-add-css-class gtk-widget "minibuffer")
 
     (flet ((show-info-message (message)
-             (setf (gtk4:text-buffer-text gtk-buffer) message)
+             (setf (gtk4:text-buffer-text text-buffer) message)
              (gtk4:widget-remove-css-class (gtk-widget minibuffer) "warning-text")
              (gtk4:widget-remove-css-class (gtk-widget minibuffer) "error-text"))
            (show-warning-message (message)
-             (setf (gtk4:text-buffer-text gtk-buffer) message)
+             (setf (gtk4:text-buffer-text text-buffer) message)
              (gtk4:widget-remove-css-class gtk-widget "error-text")
-             (gtk4:widget-add-css-class gtk-widget "warning"))
+             (gtk4:widget-add-css-class gtk-widget "warning-text"))
            (show-error-message (message)
-             (setf (gtk4:text-buffer-text gtk-buffer) message)
+             (setf (gtk4:text-buffer-text text-buffer) message)
              (gtk4:widget-remove-css-class gtk-widget  "warning-text")
              (gtk4:widget-add-css-class gtk-widget "error-text")))
 
@@ -61,7 +66,7 @@
       (gtk4:widget-add-controller gtk-widget key-controller))
 
     (let ((tag (gtk4:make-text-tag :name "locked"))
-          (tag-table (gtk4:text-buffer-tag-table gtk-buffer )))
+          (tag-table (gtk4:text-buffer-tag-table text-buffer )))
 
       ;; TOOD: add more properties
       (setf (gir:property tag :editable) nil)
@@ -71,19 +76,25 @@
 
 (defun window-minibuffer-input (window arglist callback)
   (let* ((minibuffer (minibuffer window))
-         (buffer (gtk-buffer minibuffer)))
+         (buffer (text-buffer minibuffer)))
     (gtk4:widget-grab-focus (gtk-widget minibuffer))
+    (gtk4:widget-remove-css-class (gtk-widget minibuffer) "warning-text")
+    (gtk4:widget-remove-css-class (gtk-widget minibuffer) "error-text")
+
     (iter (for (prompt . arg-type) in arglist)
       (setf (gtk4:text-buffer-text buffer)
             (concatenate 'string prompt " "))
       (setf (gtk4:text-view-editable-p (gtk-widget minibuffer)) t)
       (let ((start (gtk4:text-buffer-start-iter buffer))
             (end (gtk4:text-buffer-end-iter buffer)))
-        (gtk4:text-buffer-apply-tag-by-name buffer "locked" start end))
-      (setf (enter-action minibuffer)
-            (lambda (minibuffer)
-              (let ((text (gtk4:text-buffer-text buffer)))
-                (funcall callback (subseq text (+ 1 (length prompt))))))))))
+        (gtk4:text-buffer-apply-tag-by-name buffer "locked" start end)
+        (setf (enter-action minibuffer)
+              (lambda (minibuffer)
+                (let ((text (gtk4:text-buffer-text buffer)))
+                  (gtk4:text-buffer-remove-tag-by-name buffer "locked" start end)
+                  (setf (gtk4:text-view-editable-p (gtk-widget minibuffer)) nil)
+                  (setf (gtk4:text-buffer-text buffer) "")
+                  (funcall callback (subseq text (+ 1 (length prompt)))))))))))
 
 
 (defmethod on-keypress ((minibuffer minibuffer) keyval keystate)
