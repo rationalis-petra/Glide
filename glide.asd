@@ -68,7 +68,8 @@
                              (:file "reporting")
                              (:file "commands")
                              (:file "customise")
-                             (:file "window" :depends-on ("layout" "reporting" "customise"))))
+                             (:file "minibuffer")
+                             (:file "window" :depends-on ("minibuffer" "layout" "reporting" "customise"))))
 
                (:module "themes"
                 :pathname "themes"

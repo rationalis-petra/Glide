@@ -33,9 +33,10 @@
    ;; window stuf
    :window
    :window-add-view 
-   :minibuffer
    :active-view
    :enter-action
+   :minibuffer
+   :window-minibuffer-input
 
    ;; models & file formats
    :model

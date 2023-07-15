@@ -20,9 +20,6 @@
 
 
 
-
-
-
 (defclass window ()
   ((focus-view
     :accessor window-focus-view
