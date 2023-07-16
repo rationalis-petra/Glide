@@ -23,10 +23,22 @@
     :initarg :file
     :accessor file
     :initform nil
-    :documentation ""))
+    :documentation "The file that was used to load this model (can be nil)")
+   (source-for
+    :initform nil)
+   (dest-for
+    :initform nil)
+   (views
+    :initform nil))
   (:documentation
    "A model subclass represents a data model"))
 
+(defgeneric update-notify (model)
+  (:method ((model model))
+    (iter (for bridge in (slot-value model 'source-for))
+      (bridge-update bridge))
+    (iter (for view in (slot-value model 'views))
+      (model-updated view))))
 
 ;; File formats can be used in two different ways:
 ;; • We have a model (with no corresponding file) and want to save it to a file
@@ -64,3 +76,9 @@
   (:method (file-info (model model))
            ;; TODO: check if file info is empty 
            (message-error (format nil "Cannot save model: ~A" model))))
+
+(defun add-source (model bridge)
+   (push bridge (slot-value model 'source-for)))
+
+(defun add-dest (model bridge)
+   (push bridge (slot-value model 'dest-for)))

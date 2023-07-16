@@ -95,6 +95,10 @@
 (defmethod on-keypress ((view text-view) keyval keystate)
   (input-mode-on-keypress view keyval keystate))
 
+(defmethod model-updated ((view text-view))
+  "Do nothing (the gtk text view handles this automatically)"
+  (declare (ignroe view))
+  nil)
 
 (defmethod initialize-instance ((mode input-mode) &key table)
   (with-slots ((result table)) mode

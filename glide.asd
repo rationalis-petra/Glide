@@ -6,7 +6,7 @@
   :maintainer "Connor Redfern"
   :author "Connor Redfern"
   :license "BSD-3"
-  :description "An editor for Glyph source code"
+  :description "Glide: The Glyph interactive development environment"
   :defsystem-depends-on (:deploy)
   :build-operation "deploy-op"
   :build-pathname "glide"
@@ -60,14 +60,22 @@
                 :pathname "core"
                 :depends-on ("package" "extra")
                 :components ((:file "plugin")
+                             ;; model-view-bridge architecture
                              (:file "view")
                              (:file "model")
+                             (:file "bridge" :depends-on ("model"))
+
+                             ;; customization
                              (:file "style")
                              (:file "keymap")
-                             (:file "layout")
+                             (:file "customise")
+
+                             ;; extension points
                              (:file "reporting")
                              (:file "commands")
-                             (:file "customise")
+
+                             ;;  window and layout
+                             (:file "layout")
                              (:file "minibuffer")
                              (:file "window" :depends-on ("minibuffer" "layout" "reporting" "customise"))))
 
@@ -123,6 +131,10 @@
                               :pathname "views"
                               :depends-on ("models")
                               :components ((:file "document")))
+                             (:module "bridges"
+                              :pathname "bridges"
+                              :depends-on ("models")
+                              :components ((:file "text-doc")))
                              (:module "models"
                               :pathname "models"
                               :depends-on ("package")

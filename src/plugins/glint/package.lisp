@@ -16,4 +16,5 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 (defpackage glint
-  (:use :cl :iterate :glide :glide/base :esrap-liquid :extra.coll))
+  (:use :cl :iterate :trivia
+        :glide :glide/base :extra.coll))

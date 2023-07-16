@@ -39,11 +39,7 @@
                          (:title "Open File"))
                 (command :save-file
                          (:function #'user-save-file)
-                         (:title "Save File")))))
-   ))
-   ;; :views (list 'glint-view)
-   ;; :models (list 'glint-model)
-   ;; :menu-bar-submenus (list (list "Views" (cons "Glint" #'glint-new)))
+                         (:title "Save File")))))))
 
 ;; (defvar make-glyph-playground-layout () (make-vertical-layout ()))
 

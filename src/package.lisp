@@ -40,18 +40,28 @@
 
    ;; models & file formats
    :model
+   :add-source
+   :add-dest
+   :update-notify
+
    :file-format
    :model-file-formats
    :file
    :path
 
+   ;; bridges
+   :bridge
+   :source :destination
+   :bridge-update
+   :bridge-delta-update
+   :make-bridge-source
+   :make-bridge-dest
+
    ;; views
    :view
-   :view-model 
-   :gtk-widget
+   :view-model :gtk-widget :modeline-widgets :transient-p
+   :model-updated
    :add-keymap
-   :modeline-widgets
-   :transient-p
 
    ;; keys
    :keymap

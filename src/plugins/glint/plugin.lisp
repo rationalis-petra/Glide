@@ -29,6 +29,18 @@
    (make-instance 'glint-view
                   :model (make-default-doc))))
 
+(defun split-glint-preview (window)
+  (let ((view (active-view window)))
+    (when (typep view 'text-view)
+      (let* ((source (view-model view))
+             (dest (make-instance 'glint-model))
+             (bridge
+               (make-instance 'text↦doc
+                              :source source
+                              :destination dest)))
+        (bridge-update bridge)
+        (window-add-view window (make-instance 'glint-view :model dest))))))
+
 
 (defvar +glint-plugin+
   (make-instance
@@ -37,10 +49,19 @@
    :about "A plugin for the Glint document Language"
    :views (list 'glint-view)
    :models (list 'glint-model)
+   :commands (plugin-commands
+              (command-group :glint
+               (:when t)
+               (:elements
+                (command :split-glint-previentw
+                         (:function #'split-glint-preview)
+                         (:title "Glint Preview")))))
 
    :menu-bar-submenus (list
                        (list "Views" ;; TODO: when!!
-                             (cons "Glint" #'glint-new)))))
+                             (cons "Glint" #'glint-new))
+                       (list "Actions" ;; TODO: when!!
+                             (cons "Glint Preview" #'split-glint-preview)))))
 
 ;; (defvar make-glyph-playground-layout () (make-vertical-layout ()))
 

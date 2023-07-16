@@ -56,10 +56,6 @@
   view will cause it to split."))
   (:documentation "A view defines a particular way of looking at data"))
 
-(defclass mode ()
-  ()
-  (:documentation "A mode augments a view somehow: "))
-
 ;; class-level generics
 (defgeneric view-supported-types (view-class)
   (:documentation "Returns a list of model classes which this view supports")
@@ -77,9 +73,7 @@
   (:method (view) (string (type-of view))))
 
 (defgeneric model-updated (view)
-  (:documentation "Invoked on a view when the underlying model is updated")
-  (:method (view)
-    (error (format nil "View ~A should implement model-updated." view))))
+  (:documentation "Invoked on a view when the underlying model is updated"))
 
 (defgeneric view-commands (view)
   (:documentation "Return a set of command palette commands which the view
@@ -106,8 +100,10 @@
         (t nil)))))
 
 
-(defmethod initialize-instance :after ((view view) &key model modes &allow-other-keys)
-  (declare (ignore model modes))
+(defmethod initialize-instance :after ((view view) &key &allow-other-keys)
+  (when (slot-boundp view 'model) 
+    (push view (slot-value (slot-value view 'model) 'views)))
+
   (let ((key-controller (gtk4:make-event-controller-key)))
     (gtk4:connect key-controller "key-pressed"
                   (lambda (controller keyval keycode state)
@@ -117,5 +113,15 @@
 
 
 (defmethod (setf gtk-widget) (gtk-widget (view view))
+  ;; TODO key controller?
   (setf (slot-value view 'gtk-widget) gtk-widget)
   (gtk4:widget-add-controller gtk-widget (key-controller view)))
+
+
+;; Modes 
+;; A mode adds behaviour to a view, e.g. adding syntax highlighting to a text
+;; mode, etc. 
+
+(defclass mode ()
+  ()
+  (:documentation "A mode augments a view somehow: "))

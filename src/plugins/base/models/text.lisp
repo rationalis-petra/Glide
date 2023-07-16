@@ -31,7 +31,13 @@
 
 (defmethod initialize-instance :after ((model text-model) &key from)
   (when from
-    (setf (gtk:text-buffer-text (gtk-buffer model)) from)))
+    (setf (gtk:text-buffer-text (gtk-buffer model)) from))
+
+  ;; TODO: make sure signal stays consistent when changing buffer!
+  (gtk4:connect (gtk-buffer model) "changed"
+                (lambda (gtkm)
+                  (declare (ignore gtkm))
+                  (update-notify model))))
 
 (defmethod save-file (file-info (model text-model))
   (with-open-file (out-file (path file-info)
@@ -79,4 +85,5 @@
     (setf (gir:property tag :editable) editable)
 
     (gtk4:text-tag-table-add tag-table tag)))
+
 

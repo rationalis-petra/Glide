@@ -1,5 +1,5 @@
 ;;;; document.lisp
-rse
+
 ;; Copyright (C) 2023 Connor Redfern
 ;;
 ;; This program is free software: you can redistribute it and/or modify
@@ -24,50 +24,34 @@ rse
     :initarg :root
     :type node)))
 
+
 (defclass node ()
   ((source)
-   (params)
-   ;; (contents
-   ;;  :initarg :contents
-   ;;  :accessor contents)
-   ))
+   (params)))
+
+(defmethod (setf root) :after (root (model glint-model))
+  (update-notify model))
 
 (defgeneric render (doc type)
   (:documentation "Render a document represented by NODE to a particlar backend
   represented by the keyword TYPE (e.g. :html, :latex, ...)"))
 
 ;; Rendering
-(defmethod render ((node glint-model) (type (eql :html)))
+(defmethod render ((model glint-model) type)
   (let ((html-out (make-string-output-stream)))
     (spinneret:interpret-html-tree
      `(:html
        (:body
-        ,(render (root (make-default-doc)) :html)))
+        ,(render (root model) type)))
      :stream html-out)
     (get-output-stream-string html-out)))
+
 
 (defmethod render ((node string) (type (eql :html))) node)
 
 ;; Parsing
 (defvar *node-types* (make-hash-table))
 
-(define-esrap-env gdn)
-
-(define-gdn-rule node ()
-  #\⦗
-  (pred (lambda (c) (not (char= #\|))) character)
-  #\|
-  (pred (lambda (c) (not (char= #\⦘))) character)
-  #\⦘)
-
-(defun parse-default (string) string)
-
-(define-esrap-env glint)
-
-(define-glint-rule any () (|| bold))
-
-(define-glint-rule bold ()
-    (pred (lambda (c) (not (char= #\*))) character))
 
 ;; Parser of Glint Documents:
 ;; Glint documents are in a pseudo-markdown format
@@ -111,6 +95,7 @@ rse
 
 (defun parse-document (string) string)
 
+
 (defmacro defnode (name &body body)
   (let* ((render (cdr (assoc :render body)))
          (type (elt (car render) 1))
@@ -149,7 +134,7 @@ rse
    `(:b ,(contents node))))
 
 (defnode paragraph-node
-  (:parse "p" #'parse-default)
+  (:parse "p" #'(lambda (x) x)) ;; parse-default
   (:contents list)
   (:render
    (node :html)
@@ -161,14 +146,9 @@ rse
   (:render
    (node :html) (contents node)))
 
-
-(defun make-default-doc ()
-    (make-instance 'glint-model
-     :root
-     (make-instance
-      'paragraph-node
-      :contents (list
-                 "Hello, World! "
-                 (make-instance 'bold-node :contents "Hello")
-                 (make-instance 'italic-node :contents "World")))))
-
+(defnode document-node
+  (:parse "doc" #'(lambda (x) x)) ;; parse-default
+  (:contents list)
+  (:render
+   (node :html)
+   `(:body ,@(mapcar (⟜ #'render :html) (contents node)))))

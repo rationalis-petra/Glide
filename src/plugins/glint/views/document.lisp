@@ -17,15 +17,20 @@
 
 (in-package :glint)
 
+
 (defclass glint-view (view) ())
 
-;; webkit available:
+
 (defmethod initialize-instance :after ((view glint-view) &key model)
   (declare (ignore model))
   (with-slots (gtk-widget model) view
     (setf gtk-widget (webkit:make-web-view))
     (setf (gtk4:widget-vexpand-p gtk-widget) t)
     (setf (gtk4:widget-hexpand-p gtk-widget) t)
+    (webkit:web-view-load-html gtk-widget (render model :html) nil)))
+
+(defmethod model-updated ((view glint-view))
+  (with-slots (gtk-widget model) view
     (webkit:web-view-load-html gtk-widget (render model :html) nil)))
 
 ;; webkit not available (temporary)
@@ -47,3 +52,4 @@
 
 ;;       (setf (gtk4:widget-vexpand-p gtk-widget) t)
 ;;       (setf (gtk4:widget-hexpand-p gtk-widget) t))))
+
