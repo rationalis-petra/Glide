@@ -60,8 +60,8 @@
    :menu-bar-submenus (list
                        (list "Views" ;; TODO: when!!
                              (cons "Glint" #'glint-new))
-                       (list "Actions" ;; TODO: when!!
-                             (cons "Glint Preview" #'split-glint-preview)))))
+                       (list "Actions" ;; TODO: add a when!!
+                             (cons "Glint Preview (html)" #'split-glint-preview)))))
 
 ;; (defvar make-glyph-playground-layout () (make-vertical-layout ()))
 

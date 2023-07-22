@@ -26,26 +26,83 @@
 (defvar *make-default-view* nil)
 (defvar *default-menu-desc* nil)
 
-(defvar *active-schemas* nil)
-(defvar *app-settings* nil)
-
-(defclass settings-schema () ()
+(defclass settings-schema ()
+  ((elements
+    :type list
+    :accessor elements 
+    :initarg :elements
+    :initform nil))
   (:documentation "A settings schema describes a particular group or set of
   settings. This includes the name (symbol) and type of each setting.  For
   example, a spellcheck plugin might store as settings preferred style for
   words, whether to spellcheck in comments, what backend to use etc."))
 
+(defclass settings-value-schema ()
+  ((lisp-name
+    :type symbol
+    :initarg :lisp-name)
+   (type
+    :type t
+    :initarg :type)
+   (default
+    :initarg :default)
+   ;; used in the UI
+   (selector
+    :reader selector
+    :initarg :selector)
+   (name
+    :type string
+    :reader name
+    :initarg :name))
+  (:documentation "A settings value schema describes a specific setting, like
+  a color theme, "))
+
+(defmethod name ((symbol symbol))
+  (extra.string:symbol-pretty-name symbol))
+
+(declaim (ftype (function (cons hash-table) hash-table) insert-hash))
+(defun insert-hash (val hashtable)
+  (setf (gethash (car val) hashtable) (cdr val))
+  hashtable)
+
+(declaim (ftype (function (settings-schema) hash-table) schema))
+(defun make-default-settings (schema)
+  (if (elements schema)
+      (iter (for (name . child) in (elements schema))
+        (typecase child
+          (settings-schema
+           (accumulate (cons name (make-default-settings child))
+                       by #'insert-hash
+                       initial-value (make-hash-table)))
+          (settings-value-schema
+           (accumulate (cons name (slot-value child 'default))
+                       by #'insert-hash
+                       initial-value (make-hash-table)))))
+      (make-hash-table)))
+
+(defvar *app-settings-schema* (make-instance 'settings-schema))
+(defvar *app-settings* (make-default-settings *app-settings-schema*))
+
 (defmacro define-settings-schema (name &body body)
-  `(progn
-     (defclass ,name (settings-schema)
-     ,(iter (for (name type default) in body)
-        (collect `(,name :type ,type :initform ,default))))
-     ;; (setf
-     ;;  *active-schemas*
-     ;;  (acons (quote ,name) (make-instance (quote ,name)) *active-schemas*))
-     (setf
-      *app-settings*
-      (acons (quote ,name) (make-instance (quote ,name)) *active-schemas*))))
+  (flet ((make-val-schema (body)
+           (with-prop-values (name type selector default) (cdr body)
+             `(cons
+               (quote ,(car body))
+               (make-instance 'settings-value-schema
+                              :lisp-name (quote ,(car body))
+                              :type (quote ,type)
+                              :default ,default
+                              :selector (list ,(car selector) ,(cadr selector))
+                              :name ,name)))))
+
+    (let ((schema-sym (gensym "new-schema")))
+      `(let ((,schema-sym
+               (make-instance 'settings-schema
+                              :elements
+                              ,(cons 'list
+                                     (mapcar #'make-val-schema body)))))
+         (push (cons (quote ,name) ,schema-sym) (elements *app-settings-schema*))
+         (setf (gethash (quote ,name) *app-settings*) (make-default-settings ,schema-sym))))))
 
 
 (defun load-settings (settings-dir)
@@ -54,20 +111,20 @@
 
 
 (defun setting (path)
-  (let ((setting (cdr (assoc (car path) *app-settings*)))
-        (new-path (cdr path)))
-    (iter (for slot in new-path)
-      (setf setting (slot-value setting slot)))
+  (let ((setting *app-settings*))
+    (iter (for key in path)
+      (setf setting (gethash key setting)))
     setting))
 
-
+;; TODO: 
 (defun (setf setting) (val path)
-  (let ((schema (cdr (assoc (car path) *app-settings*)))
-        (final-slot (car (last path)))
-        (new-path (butlast (cdr path) 1)))
-    (iter (for slot in new-path)
-      (setf schema (slot-value schema slot)))
-    (setf (slot-value schema final-slot) val)))
+  (labels ((update (val path settings)
+             (match path
+               ((list name)
+                (setf (gethash name settings) val))
+               ((cons hd tl)
+                (update val tl (gethash hd settings))))))
+    (update val path *app-settings*)))
 
 
 

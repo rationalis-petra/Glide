@@ -18,7 +18,8 @@
                :trivia
                :iterate
                :trivial-utf-8
-               :esrap-liquid
+               ;;:esrap-liquid
+               :closer-mop
                ;; portability
                :uiop
                :bordeaux-threads
@@ -54,7 +55,12 @@
                  (:module "coll"
                   :pathname "coll"
                   :components ((:file "package")
-                               (:file "coll")))))
+                               (:file "coll")))
+
+                 (:module "lang"
+                  :pathname "lang"
+                  :components ((:file "package")
+                               (:file "lang")))))
 
                (:module "core"
                 :pathname "core"
@@ -92,12 +98,14 @@
                              :pathname "models"
                              :depends-on ("package")
                              :components ((:file "text")
-                                          (:file "list")))
+                                          (:file "list")
+                                          (:file "settings")))
                              (:module "views"
                               :pathname "views"
                               :depends-on ("models")
                               :components ((:file "text")
                                            (:file "list")
+                                           (:file "settings" :depends-on ("list"))
                                            (:file "dashboard")))
 
                              (:file "commands" :depends-on ("package"))
@@ -140,3 +148,4 @@
                               :depends-on ("package")
                               :components ((:file "document")))
                              (:file "package")))))
+

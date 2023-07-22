@@ -58,3 +58,12 @@
    (make-instance 'text-view
                   :model (make-instance 'text-model)
                   :input-mode +unicode-input-mode+)))
+
+(defun open-settings-view (window)
+  (window-add-view
+   window
+   (make-instance 'settings-view
+                  :model (make-instance
+                          'settings-model
+                          :schema glide::*app-settings-schema*
+                          :values glide::*app-settings*))))

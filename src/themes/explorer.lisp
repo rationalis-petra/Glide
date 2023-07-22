@@ -19,6 +19,7 @@
 
 (defparameter +explorer-dark-theme+
   (make-instance 'color-theme
+                 :name "Explorer Dark"
                  :fg-primary "#a8a7ab" ;;#c5c6c9
                  :bg-primary "#212025"
 
@@ -33,6 +34,7 @@
 
 (defparameter +explorer-light-theme+
   (make-instance 'color-theme
+                 :name "Explorer Light"
                  :fg-primary "#212025" ;;#c5c6c9
                  :bg-primary "#a8a7ab"
 

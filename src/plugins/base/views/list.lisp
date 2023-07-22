@@ -41,8 +41,12 @@
     (gtk4:connect factory "bind"
                   (lambda (factory item)
                     (declare (ignore factory))
-                    (let ((widget (gtk4:list-item-child item))
-                          (lisp-item (gethash (gtk4:list-item-item item) (lisp-vals model))))
+                    (let* ((widget (gtk4:list-item-child item))
+                           (item-name (gtk4:string-object-string
+                                       (gobj:coerce (gtk4:list-item-item item)
+                                                    'gtk4:string-object)))
+                           (lisp-item (gethash item-name (lisp-vals model))))
+                      (format t "item-name: ~A~%lisp-item: ~A~%" item-name lisp-item)
                       (update-list-item-widget view lisp-item widget))))
     (gtk4:connect factory "unbind"
                   (lambda (factory item)

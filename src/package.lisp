@@ -16,19 +16,27 @@
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 (defpackage glide
-  (:use :cl :extra.coll :iterate :trivia)
+  (:use :cl :extra.coll :extra.lang :iterate :trivia)
   (:export
    ;; main function, for easy running
    :main :glide-app
 
    ;; customization
    :setting
+   :settings-schema
+   :settings-value-schema
    :*make-default-layout*
-   :deftheme
-   :+explorer-theme+
+   :deftheme :name :theme
    :style-settings
-   :theme
    :dialog-preference
+
+   :color-theme
+   :fg-primary :bg-primary
+   :fg-secondary :bg-secondary
+   :fg-muted :bg-muted
+   :fg-info :fg-warning :bg-error
+
+
 
    ;; window stuf
    :window

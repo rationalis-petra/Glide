@@ -18,4 +18,6 @@
 (defpackage extra.string
   (:use :cl :iterate)
   (:export
-   :split-on))
+   :split-on
+
+   :symbol-pretty-name))

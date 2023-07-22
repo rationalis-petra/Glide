@@ -20,6 +20,27 @@
 
 (defclass glint-view (view) ())
 
+(defgeneric make-css-style (theme)
+  (:method ((theme color-theme))
+    (with-slots (fg-primary
+                 bg-primary
+
+                 fg-secondary
+                 bg-secondary
+
+                 fg-muted
+                 bg-muted
+
+                 fg-info
+                 fg-warning
+                 fg-error) theme
+      (apply
+       #'lass:compile-and-write
+       `((body
+          :color ,fg-primary
+          :background-color ,bg-primary
+          ))))))
+
 
 (defmethod initialize-instance :after ((view glint-view) &key model)
   (declare (ignore model))
@@ -27,11 +48,18 @@
     (setf gtk-widget (webkit:make-web-view))
     (setf (gtk4:widget-vexpand-p gtk-widget) t)
     (setf (gtk4:widget-hexpand-p gtk-widget) t)
-    (webkit:web-view-load-html gtk-widget (render model :html) nil)))
+    (webkit:web-view-load-html gtk-widget 
+     (render-html-body (render model :html)
+                       :style (make-css-style (setting '(style-settings theme))))
+     nil)))
 
 (defmethod model-updated ((view glint-view))
   (with-slots (gtk-widget model) view
-    (webkit:web-view-load-html gtk-widget (render model :html) nil)))
+    (webkit:web-view-load-html
+     gtk-widget
+     (render-html-body (render model :html)
+                       :style (make-css-style (setting '(style-settings theme))))
+     nil)))
 
 ;; webkit not available (temporary)
 ;; (defmethod initialize-instance :after ((view glint-view) &key model)
@@ -41,7 +69,14 @@
 ;;     (setf (gtk4:widget-vexpand-p gtk-widget) t)
 ;;     (setf (gtk4:widget-hexpand-p gtk-widget) t)
 ;;     (setf (gtk4:text-buffer-text (gtk4:text-view-buffer gtk-widget))
-;;           (render model :html))))
+;;           (render-html-body (render model :html)
+;;                        :style (make-css-style (setting '(style-settings theme)))))))
+
+;; (defmethod model-updated ((view glint-view))
+;;   (with-slots (gtk-widget model) view
+;;     (setf (gtk4:text-buffer-text (gtk4:text-view-buffer gtk-widget))
+;;           (render-html-body (render model :html)
+;;                             :style (make-css-style (setting '(style-settings theme)))))))
 
 ;; webkit not available (when silc is working)
 ;; (defmethod initialize-instance :after ((view glint-view) &key model)

@@ -36,10 +36,7 @@
         (cons "File Open" #'glide/base:user-open-file)
         (cons "File Save" #'glide/base:user-save-file)
         (cons "New" (lambda (window) (message-info "file new!"))))
-  (list "Settings"
-        (cons "Application" (lambda (window) (message-info "application settings")))
-        (cons "Window" (lambda (window) (message-info "window settings")))
-        (cons "View" (lambda (window) (message-info "view settings"))))
+  
   (list "Actions"
         (cons "Command"
               (lambda (window)
@@ -60,11 +57,15 @@
 
 (define-settings-schema style-settings
   (theme
-   theme
-   +explorer-light-theme+)
+   (:name "Theme")
+   (:type theme)
+   (:selector (:multi-choice #'get-all-themes))
+   (:default +explorer-dark-theme+))
   (dialog-preference
-   (or (eql :minibfufer) (eql :popup))
-   :minibuffer))
+   (:name "Dialog Preference")
+   (:type (or (eql :minibfufer) (eql :popup)))
+   (:selector (:multi-choice (lambda () '(:minibuffer :popup))))
+   (:default :minibuffer)))
 
 ;; (defvar *default-plugins*
 ;;   (list +base-plugin+ +glaze-plugin+ +glint-plugin+ +glyph-plugin+))

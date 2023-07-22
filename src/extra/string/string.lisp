@@ -20,6 +20,9 @@
 
 (in-package :extra.string)
 
+(declaim (ftype (function (string character
+                           &key (empty-substrs (or (eql :keep) (eql :remove))))
+                          list) split-on))
 (defun split-on (string char &key (empty-substrs :keep))
   "Split STRING into substrings with instances of CHAR marking the boundary
 between strings. Behaviour can be modified by ADJACENT-SPLITS"
@@ -43,3 +46,6 @@ between strings. Behaviour can be modified by ADJACENT-SPLITS"
 
 
 
+(declaim (ftype (function (symbol) string) symbol-pretty-name))
+(defun symbol-pretty-name (symbol)
+  (string-capitalize (substitute #\Space #\- (string symbol))))

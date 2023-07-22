@@ -70,7 +70,7 @@
 ;; instance-level generics
 (defgeneric name (view)
   (:documentation "Return the name of the object in question")
-  (:method (view) (string (type-of view))))
+  (:method (view) (extra.string:symbol-pretty-name (type-of view))))
 
 (defgeneric model-updated (view)
   (:documentation "Invoked on a view when the underlying model is updated"))
@@ -90,14 +90,16 @@
   (:documentation "Called on a view whenever a key is pressed.")
   (:method ((view view) keyval modifier-state)
     ;; TODO: lookup values in keymap
-    (let ((action (key-action keyval modifier-state)))
-      ;; A command to run
-      ;; A t, indicating that the state was updated
-      ;; A nil, indicating no action was found
-      (cond
-        ((typep action 'command) (funcall action))
-        ((null action) (call-next-method))
-        (t nil)))))
+    ;; TODO: keep track of current key-state
+    ;; (let ((action (key-action keymap keysate keyval modifier-state)))
+    ;;   ;; A command to run
+    ;;   ;; A t, indicating that the state was updated
+    ;;   ;; A nil, indicating no action was found
+    ;;   (cond
+    ;;     ((typep action 'command) (funcall action))
+    ;;     ((null action) (call-next-method))
+    ;;     (t nil)))
+    ))
 
 
 (defmethod initialize-instance :after ((view view) &key &allow-other-keys)

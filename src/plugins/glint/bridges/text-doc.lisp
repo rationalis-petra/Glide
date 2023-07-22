@@ -110,7 +110,7 @@
            (make-instance 'bold-node :contents str)))
        (inlmono (s)
          (let ((str (parse-till s (⟜ #'char= #\`))))
-           (make-instance 'bold-node :contents str)))
+           (make-instance 'mono-node :contents str)))
        ;; (blockcode (s) ())
        )
 

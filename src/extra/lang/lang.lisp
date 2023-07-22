@@ -1,4 +1,4 @@
-;;;; package.lisp
+;;;; lang.lisp
 
 ;; Copyright (C) 2023 Connor Redfern
 ;;
@@ -15,29 +15,16 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-(defpackage glide/base
-  (:use :cl :iterate :glide :trivia :trivial-utf-8)
-  (:export
 
-   :text-view
-   :+unicode-input-mode+
-   :input-mode
+(in-package :extra.lang)
 
-   :dashboard-view
 
-   :abstract-list-view
-   :make-list-item-widget
-   :update-list-item-widget
+(defmacro with-prop-values (vals plist &body body)
+  `(let
+       (,@(iter (for symbol in vals)
+            (collect
+                (list symbol
+                      `(cadr (assoc ,(alexandria:make-keyword symbol) ,plist))))))
 
-   ;;utility
-   :user-save-file
-   :user-open-file
+     ,@body))
 
-   :text-model
-   :gtk-buffer :text-model-string :text-model-insert :text-model-end-iter
-
-   :list-model
-   :emptyp
-   :clear
-   :get-element
-   :add-element))

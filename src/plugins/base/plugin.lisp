@@ -39,7 +39,13 @@
                          (:title "Open File"))
                 (command :save-file
                          (:function #'user-save-file)
-                         (:title "Save File")))))))
+                         (:title "Save File")))))
+   :menu-bar-submenus
+   (list
+    (list "Settings"
+          (cons "Application" #'open-settings-view)
+          (cons "Window" (lambda (window) (message-info "window settings")))
+          (cons "View" (lambda (window) (message-info "view settings")))))))
 
 ;; (defvar make-glyph-playground-layout () (make-vertical-layout ()))
 

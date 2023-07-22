@@ -20,12 +20,24 @@
 (defclass list-model (model)
   ((lisp-vals
     :accessor lisp-vals
-    :initform (make-hash-table))
+    :initform (make-hash-table :test #'equal)
+    :documentation "The gtk list stores string identifiers. This hashtable maps
+  these identifiers to their corresponding lisp value.")
+
+
    (gtk-list
     :accessor gtk-list
     ;; :initform (gio:make-list-store :item-type (gobject:type-from-name "GValue"))
     :initform (gtk4:make-string-list :strings ())))
   (:documentation "Wraps a GTK4 list model. Elements are assumed to be CL values"))
+
+(defmethod initialize-instance :after ((model list-model) &key from &allow-other-keys)
+  (iter (for item in from)
+    (add-element item model)))
+
+(defmethod clear ((model list-model))
+  (setf (lisp-vals model) (make-hash-table))
+  (gio:list-store-remove-all (gtk-list model)))
 
 (defun emptyp (model)
   (equal (hash-table-count (lisp-vals model)) 0))

@@ -22,6 +22,7 @@
   ((root
     :accessor root
     :initarg :root
+    :initform (make-instance 'document-node :contents nil)
     :type node)))
 
 
@@ -36,15 +37,33 @@
   (:documentation "Render a document represented by NODE to a particlar backend
   represented by the keyword TYPE (e.g. :html, :latex, ...)"))
 
-;; Rendering
-(defmethod render ((model glint-model) type)
+(defun render-html-body (doc &key style)
   (let ((html-out (make-string-output-stream)))
     (spinneret:interpret-html-tree
      `(:html
-       (:body
-        ,(render (root model) type)))
+       (:script :src "https://polyfill.io/v3/polyfill.min.js?features=es6")
+       (:script :id "MathJax-script"
+                :|async src| "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js")
+       (:script (:raw "
+MathJax = {
+  tex: {
+    inlineMath: [              // start/end delimiter pairs for in-line math
+      ['$', '$']
+    ],
+    displayMath: [             // start/end delimiter pairs for display math
+      ['$$', '$$'],
+    ],
+  }
+};
+"))
+       (:style (:raw ,style))
+       ,doc)
      :stream html-out)
     (get-output-stream-string html-out)))
+
+;; Rendering
+(defmethod render ((model glint-model) (type (eql :html)))
+  (render (root model) type))
 
 
 (defmethod render ((node string) (type (eql :html))) node)
@@ -132,6 +151,13 @@
   (:render
    (node :html)
    `(:b ,(contents node))))
+
+(defnode mono-node
+  (:parse "mono" #'(lambda (x) x))
+  (:contents string)
+  (:render
+   (node :html)
+   `(:code ,(contents node))))
 
 (defnode paragraph-node
   (:parse "p" #'(lambda (x) x)) ;; parse-default

@@ -23,14 +23,26 @@
 
 (in-package :glide)
 
+(defvar *themes* nil)
+(defun get-all-themes () *themes*)
+
 (defvar *current-theme* nil)
 (defvar *current-theme-style-provider* nil)
 
 (defclass theme ()
-  ((style-provider
+  ((name
+    :reader name
+    :initarg :name
+    :type string)
+   (style-provider
     :documentation "The gtk style provider")))
 
-(defgeneric get-style-provider (theme))
+(defgeneric get-style-provider (theme)
+  (:method ((theme theme)) (slot-value theme 'style-provider))
+  (:documentation "Produce a gtk style provider from the theme (used to style gtk apps)"))
+
+(defmethod initialize-instance :after ((theme theme) &key name &allow-other-keys)
+  (push theme *themes*))
 
 (defclass color-theme (theme)
   ((fg-primary)
@@ -50,12 +62,13 @@
                                 &key
                                   bg-primary
                                   bg-secondary
-                                   fg-primary
+                                  fg-primary
                                   fg-secondary
                                   fg-muted
                                   bg-muted
                                   fg-warning
-                                  fg-error)
+                                  fg-error
+                                 &allow-other-keys)
   (with-slots ((bp bg-primary) (bs bg-secondary)
                (fp fg-primary) (fs fg-secondary)
                (fm fg-muted)   (bm bg-muted)
@@ -67,7 +80,8 @@
           fm fg-muted
           bm bg-muted
           fw fg-warning
-          fe fg-error)))
+          fe fg-error)
+    (call-next-method)))
 
 (defmethod get-style-provider ((theme color-theme))
   (let ((style-text
